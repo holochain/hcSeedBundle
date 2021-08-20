@@ -1,0 +1,15 @@
+{
+  "name": "keybundle-poc",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "libsodium": "^0.7.9",
+    "libsodium-wrappers": "^0.7.9",
+    "msgpack-lite": "^0.1.26"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
