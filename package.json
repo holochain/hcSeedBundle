@@ -5,6 +5,7 @@
   "type": "module",
   "license": "ISC",
   "dependencies": {
+    "base64-js": "^1.5.1",
     "libsodium": "^0.7.9",
     "libsodium-wrappers": "^0.7.9",
     "msgpack-lite": "^0.1.26"
