@@ -345,10 +345,20 @@ export class UnlockedSeedBundle {
   // the secret buffer is stored here
   #secret
 
-  // the base64 encoded public key associated with this seed
+  /**
+   * the base64 encoded public key associated with this seed
+   *
+   * @instance
+   * @type {string}
+   */
   signPubKey
 
-  // any app / user data to provide context for this particular seed
+  /**
+   * any app / user data to provide context for this particular seed
+   *
+   * @instance
+   * @type {object}
+   */
   appData = {}
 
   /**
