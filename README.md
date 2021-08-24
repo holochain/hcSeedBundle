@@ -4,7 +4,7 @@ Javascript Holochain SeedBundle parsing and generation library.
 
 ### Documentation
 
-[See our JSDoc Generated Documentation](https://holochain.github.io/keybundle-poc/)
+[See our JSDoc Generated Documentation](https://holochain.github.io/hcSeedBundle/)
 
 ### Derivation Usage
 
