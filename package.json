@@ -5,8 +5,11 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "standard && mocha",
-    "doc": "jsdoc index.js && xdg-open out/index.html"
+    "lint": "standard",
+    "mocha": "mocha",
+    "doc": "jsdoc -d docs -R README.md index.js",
+    "test": "npm run-script lint && npm run-script mocha && npm run-script doc",
+    "doc-open": "npm run-script doc && xdg-open ./docs/index.html"
   },
   "dependencies": {
     "libsodium-wrappers": "^0.7.9",
@@ -21,7 +24,7 @@
   },
   "standard": {
     "ignore": [
-      "out"
+      "docs"
     ],
     "env": "mocha",
     "parser": "babel-eslint"
