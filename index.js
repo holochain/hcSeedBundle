@@ -11,6 +11,8 @@ const _sodiumCfg = {
 
 /**
  * Await this promise once before calling functions in this library.
+ *
+ * @type {Promise}
  */
 export const seedBundleReady = _sodium.ready.then(() => {
   _sodiumCfg.sodiumReady = true
@@ -112,6 +114,7 @@ class PrivSecretBuf {
  * Note, this buffer will be zeroed internally.
  *
  * @param {Uint8Array} secret the secret to injest.
+ * @returns {PrivSecretBuf}
  */
 export function parseSecret (secret) {
   checkSodiumReady()
@@ -164,6 +167,7 @@ export class SeedCipher {
    * Generate an encrypted seedCipher for given secretSeed
    *
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
+   * @returns {object}
    */
   encryptSeed (secretSeed) {
     throw new Error('SeedCipher.encryptSeed is not callable on base class')
@@ -188,6 +192,9 @@ export class LockedSeedCipher {
   /**
    * Once the secretSeed is decrypted, subclass instances will call this
    * to generate the actualy UnlockedSeedBundle instance.
+   *
+   * @param {PrivSecretBuf}
+   * @returns {UnlockedSeedBundle}
    */
   finishUnlock (secretSeed) {
     return this.#finishUnlockCb(secretSeed)
@@ -226,6 +233,7 @@ export class SeedCipherPwHash extends SeedCipher {
   /**
    * Encrypte a secretSeed SeedCipher with this instance.
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
+   * @returns {object}
    */
   encryptSeed (secretSeed) {
     if (!(secretSeed instanceof PrivSecretBuf)) {
@@ -297,6 +305,7 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
    *
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
+   * @returns {UnlockedSeedBundle}
    */
   unlock (passphrase, limitName) {
     if (!(passphrase instanceof PrivSecretBuf)) {
@@ -397,6 +406,7 @@ export class UnlockedSeedBundle {
    * WARNING: see class-level note about zeroing / secrets.
    *
    * @param {object} - appData to associate with bundle
+   * @returns {UnlockedSeedBundle}
    */
   static newRandom (appData) {
     checkSodiumReady()
@@ -410,6 +420,7 @@ export class UnlockedSeedBundle {
    * WARNING: see class-level note about zeroing / secrets.
    *
    * @param {Uint8Array} - encoded bytes to decode / decrypt
+   * @returns {LockedSeedCipher[]}
    */
   static fromLocked (encodedBytes) {
     const decoded = msgpack.decode(encodedBytes)
@@ -460,6 +471,7 @@ export class UnlockedSeedBundle {
    *
    * @param {number} - derivation subkeyId
    * @param {object} - appData to associate with subseed bundle
+   * @returns {UnlockedSeedBundle}
    */
   derive (subkeyId, appData) {
     const next = this.#secret.derive(subkeyId)
@@ -472,6 +484,7 @@ export class UnlockedSeedBundle {
    * WARNING: see class-level note about zeroing / secrets.
    *
    * @param {SeedCipher[]} - list of seed ciphers to encrypt into the bundle
+   * @returns {Uint8Array}
    */
   lock (seedCipherList) {
     if (!Array.isArray(seedCipherList)) {
