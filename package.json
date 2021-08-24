@@ -1,16 +1,29 @@
 {
-  "name": "keybundle-poc",
+  "name": "hcSeedBundle",
   "version": "0.0.1",
   "main": "index.js",
   "type": "module",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "standard && mocha",
+    "doc": "jsdoc index.js && xdg-open out/index.html"
+  },
   "dependencies": {
-    "base64-js": "^1.5.1",
-    "libsodium": "^0.7.9",
     "libsodium-wrappers": "^0.7.9",
     "msgpack-lite": "^0.1.26"
   },
-  "scripts": {
-    "start": "node index.js"
+  "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "eslint": "^4.19.1",
+    "jsdoc": "^3.6.7",
+    "mocha": "^9.1.0",
+    "standard": "^16.0.3"
+  },
+  "standard": {
+    "ignore": [
+      "out"
+    ],
+    "env": "mocha",
+    "parser": "babel-eslint"
   }
 }
