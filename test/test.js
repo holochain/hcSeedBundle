@@ -18,6 +18,12 @@ async function generate (s) {
     if (u.type === 'pwHash') {
       const pw = (new TextEncoder()).encode(u.passphrase)
       cList.push(new SeedCipherPwHash(parseSecret(pw), 'interactive'))
+    } else if (u.type === 'securityQuestions') {
+      const a1 = parseSecret((new TextEncoder()).encode(u.answerList[0]))
+      const a2 = parseSecret((new TextEncoder()).encode(u.answerList[1]))
+      const a3 = parseSecret((new TextEncoder()).encode(u.answerList[2]))
+      const answerList = [a1, a2, a3]
+      cList.push(new SeedCipherSecurityQuestions(u.questionList, answerList, 'interactive'))
     } else {
       throw new Error('invalid SeedCipher: ' + JSON.stringify(u))
     }
@@ -57,6 +63,13 @@ describe('SeedBundle Test Suite', () => {
           if (unlock.type === 'pwHash') {
             const pw = (new TextEncoder()).encode(unlock.passphrase)
             sList.push(seedCipher.unlock(parseSecret(pw), 'interactive'))
+          } else if (unlock.type === 'securityQuestions') {
+            const a1 = (new TextEncoder()).encode(unlock.answerList[0])
+            const a2 = (new TextEncoder()).encode(unlock.answerList[1])
+            const a3 = (new TextEncoder()).encode(unlock.answerList[2])
+            const answerList = [parseSecret(a1), parseSecret(a2), parseSecret(a3)]
+            assert.deepEqual(unlock.questionList, seedCipher.getQuestionList())
+            sList.push(seedCipher.unlock(answerList, 'interactive'))
           } else {
             throw new Error('invalid SeedCipher: ' + seedCipher)
           }
