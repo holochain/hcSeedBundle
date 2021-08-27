@@ -20,6 +20,24 @@ export default {
         "m/68/0/65": "T8SdReG4FTUdOY0Zi4W23sHE2hkzSFI5kO8XQHXN1rg",
         "m/68/0/65/0": "5tmYE6DaegiQ8lLTlPD0AOWfVkchkkvK5AnoMlj66fk"
       }
+    },
+    {
+      "cipher": "g69oY1NlZWRCdW5kbGVWZXIArnNlZWRDaXBoZXJMaXN0koSkdHlwZaZwd0hhc2ikc2FsdNgS2LqLnAFGqujDc-GDkjo2A7BzZWVkQ2lwaGVySGVhZGVyxxgScTBuUFJ6T5-HFHmlB6BKxG7LIzlOSqTpqnNlZWRDaXBoZXLHMRKwUici7B56Yh3eDhInMj40Vgq4otL7hmdQdTKlYvM-qsuoHfPYeaC3C8rpbfNo0fcthaR0eXBlsXNlY3VyaXR5UXVlc3Rpb25zpHNhbHTYEp4wAhvfHXAr7XsO7Se06FCscXVlc3Rpb25MaXN0k6NxLWGjcS1io3EtY7BzZWVkQ2lwaGVySGVhZGVyxxgS-Lpf19DIuK8mTXBTg1gg0-iDCxV3-2OMqnNlZWRDaXBoZXLHMRJMUsdTa4LmSxTXwpkEtLWtJHNbREFSLzIngt2RKRuXAWPY57AYR7_P3P1G7qF3xRbzp2FwcERhdGHEAYA",
+      "unlock": [
+        {
+          "type": "pwHash",
+          "passphrase": "my passphrase with multiple words",
+        },
+        {
+          "type": "securityQuestions",
+          "questionList": ["q-a", "q-b", "q-c"],
+          "answerList": ["a-a", "a-b", "a-c"]
+        }
+      ],
+      "signPubKey": "nprsLbv8KzxFTuEKRsElBnVXCdpe1Xz_7EwqtjCvZCc",
+      "derivations": {
+        "m/68/0/65/0": "WAxxG-D00QqQxCnvTXgDO7o0iu8hG83o1wEIA7KW3EY"
+      }
     }
   ]
 }
