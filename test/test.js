@@ -3,7 +3,8 @@ import {
   seedBundleReady,
   parseSecret,
   UnlockedSeedBundle,
-  SeedCipherPwHash
+  SeedCipherPwHash,
+  SeedCipherSecurityQuestions,
 } from '../index.js'
 import fixtures from './seed_bundle_test_fixtures.js'
 
@@ -97,7 +98,7 @@ describe('SeedBundle Test Suite', () => {
     deviceRoot.zero()
   })
 
-  it('lock/unlock key equality', async () => {
+  it('lock/unlock pwHash key equality', async () => {
     await seedBundleReady
 
     const master = UnlockedSeedBundle.newRandom({
@@ -115,6 +116,55 @@ describe('SeedBundle Test Suite', () => {
 
     const pw2 = (new TextEncoder()).encode('test-passphrase')
     const master2 = unlockCipherList[0].unlock(parseSecret(pw2), 'interactive')
+
+    assert.equal(master.signPubKey, master2.signPubKey)
+
+    master2.zero()
+  })
+
+  it('lock/unlock securityQuestion key equality', async () => {
+    await seedBundleReady
+
+    const master = UnlockedSeedBundle.newRandom({
+      bundleType: 'master'
+    })
+
+    const q1 = 'What was the name of your first pet?'
+    const q2 = 'What was the model of your first car?'
+    const q3 = 'What are you most afraid of?'
+
+    const a1 = (new TextEncoder()).encode('Fred  ')
+    const a2 = (new TextEncoder()).encode(' PinTo')
+    const a3 = (new TextEncoder()).encode('\tZoMbies')
+    const masterEncoded = master.lock([
+      new SeedCipherSecurityQuestions([
+          q1,
+          q2,
+          q3
+        ],
+        [
+          parseSecret(a1),
+          parseSecret(a2),
+          parseSecret(a3)
+        ],
+        'interactive'
+      )
+    ])
+
+    master.zero()
+
+    const unlockCipherList = UnlockedSeedBundle.fromLocked(masterEncoded)
+
+    assert.deepEqual([q1, q2, q3], unlockCipherList[0].getQuestionList())
+
+    const b1 = (new TextEncoder()).encode('FreD\n')
+    const b2 = (new TextEncoder()).encode('PINTO')
+    const b3 = (new TextEncoder()).encode('\t\tZombies')
+    const master2 = unlockCipherList[0].unlock([
+      parseSecret(b1),
+      parseSecret(b2),
+      parseSecret(b3)
+    ], 'interactive')
 
     assert.equal(master.signPubKey, master2.signPubKey)
 

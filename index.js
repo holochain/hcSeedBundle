@@ -277,6 +277,121 @@ export class SeedCipherPwHash extends SeedCipher {
   }
 }
 
+function privNormalizeSecurityAnswers (answers) {
+  // somehow standard is failing to recognize the usage in the loop
+  // eslint-disable-next-line no-unused-vars
+  for (const a of answers) {
+    if (!(a instanceof PrivSecretBuf)) {
+      throw new Error('answer must be construct with parseSecret()')
+    }
+  }
+
+  // is there a more secure way to do this lcase / trimming / encoding??
+  for (let ai = 0; ai < answers.length; ++ai) {
+    const s = (new TextDecoder()).decode(answers[ai].get())
+    answers[ai].zero()
+    answers[ai] = (new TextEncoder()).encode(s.toLowerCase().trim())
+  }
+  const total = answers[0].length + answers[1].length + answers[2].length
+
+  const answerBlob = new Uint8Array(total)
+  answerBlob.set(answers[0])
+  answerBlob.set(answers[1], answers[0].length)
+  answerBlob.set(answers[2], answers[0].length + answers[1].length)
+
+  _sodium.memzero(answers[0])
+  _sodium.memzero(answers[1])
+  _sodium.memzero(answers[2])
+
+  return parseSecret(answerBlob)
+}
+
+/**
+ * SeedCipher locked by three security question answers
+ */
+export class SeedCipherSecurityQuestions extends SeedCipher {
+  #questionList
+  #answerBlob
+  #limitName
+
+  /**
+   * Build this with
+   *
+   * @param {string[]} - 3 security questions
+   * @param {PrivSecretBuf[]} - 3 security answers (parseSecret(Uint8Array))
+   * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
+   */
+  constructor (questions, answers, limitName) {
+    super()
+    if (
+      !Array.isArray(questions) ||
+      !Array.isArray(answers) ||
+      questions.length !== 3 ||
+      answers.length !== 3
+    ) {
+      throw new Error('require 3 questions and 3 answers')
+    }
+
+    this.#questionList = questions
+    this.#answerBlob = privNormalizeSecurityAnswers(answers)
+    this.#limitName = limitName
+  }
+
+  /**
+   * Clear secret data
+   */
+  zero () {
+    this.#answerBlob.zero()
+  }
+
+  /**
+   * Encrypte a secretSeed SeedCipher with this instance.
+   * @param {PrivSecretBuf} - parseSecret(Uint8Array)
+   * @returns {object}
+   */
+  encryptSeed (secretSeed) {
+    if (!(secretSeed instanceof PrivSecretBuf)) {
+      throw new Error('secretSeed must be an internal secret buffer')
+    }
+
+    const salt = _sodium.randombytes_buf(16)
+
+    const { opsLimit, memLimit } = privTxLimits(this.#limitName)
+
+    // generate secret from pwhash
+    const secret = _sodium.crypto_pwhash(
+      32,
+      this.#answerBlob.get(),
+      salt,
+      opsLimit,
+      memLimit,
+      _sodium.crypto_pwhash_ALG_ARGON2ID13
+    )
+
+    // initialize encryption
+    const { state, header } = _sodium
+      .crypto_secretstream_xchacha20poly1305_init_push(secret)
+
+    _sodium.memzero(secret)
+
+    // encrypt our inner secret data
+    const cipher = _sodium.crypto_secretstream_xchacha20poly1305_push(
+      state,
+      secretSeed.get(),
+      null,
+      _sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+    )
+
+    return {
+      type: 'securityQuestions',
+      salt,
+      questionList: this.#questionList,
+      seedCipherHeader: header,
+      seedCipher: cipher
+    }
+  }
+}
+
 /**
  * Unlock a SeedCipher with a straight forward pwhashed passphrase.
  */
@@ -325,6 +440,91 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
     )
 
     passphrase.zero()
+
+    // initialize decryption
+    const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
+      this.#header,
+      secret
+    )
+
+    _sodium.memzero(secret)
+
+    // finalize decryption
+    const res = _sodium.crypto_secretstream_xchacha20poly1305_pull(state, this.#cipher)
+    if (!res) {
+      throw new Error('failed to decrypt bundle')
+    }
+    const { message } = res
+
+    return this.finishUnlock(parseSecret(message))
+  }
+}
+
+/**
+ * Unlock a SeedCipher with three security question answers.
+ */
+export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
+  #questionList
+  #salt
+  #header
+  #cipher
+
+  /**
+   * You won't use this directly, call UnlockedSeedBundle.fromLocked()
+   *
+   * @param {function} - the finishUnlock callback function
+   * @param {string[]} - the list of security questions
+   * @param {Uint8Array} - argon salt
+   * @param {Uint8Array} - secretstream header
+   * @param {Uint8Array} - secretstream cipher
+   */
+  constructor (finishUnlockCb, questionList, salt, header, cipher) {
+    super(finishUnlockCb)
+    this.#questionList = questionList
+    this.#salt = salt
+    this.#header = header
+    this.#cipher = cipher
+  }
+
+  /**
+   * List the security questions that should be answered.
+   *
+   * @returns {string[]}
+   */
+  getQuestionList () {
+    return this.#questionList.slice()
+  }
+
+  /**
+   * Unlock to an UnlockedSeedBundle
+   *
+   * @param {PrivSecretBuf[]} - 3 security answers (parseSecret(Uint8Array))
+   * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
+   * @returns {UnlockedSeedBundle}
+   */
+  unlock (answers, limitName) {
+    if (
+      !Array.isArray(answers) ||
+      answers.length !== 3
+    ) {
+      throw new Error('require 3 answers')
+    }
+
+    const answerBlob = privNormalizeSecurityAnswers(answers)
+
+    const { opsLimit, memLimit } = privTxLimits(limitName)
+
+    // generate secret from pwhash
+    const secret = _sodium.crypto_pwhash(
+      32,
+      answerBlob.get(),
+      this.#salt,
+      opsLimit,
+      memLimit,
+      _sodium.crypto_pwhash_ALG_ARGON2ID13
+    )
+
+    answerBlob.zero()
 
     // initialize decryption
     const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
@@ -440,6 +640,8 @@ export class UnlockedSeedBundle {
     for (const seedCipher of decoded.seedCipherList) {
       if (seedCipher.type === 'pwHash') {
         outList.push(new LockedSeedCipherPwHash(finishUnlockCb, seedCipher.salt, seedCipher.seedCipherHeader, seedCipher.seedCipher))
+      } else if (seedCipher.type === 'securityQuestions') {
+        outList.push(new LockedSeedCipherSecurityQuestions(finishUnlockCb, seedCipher.questionList, seedCipher.salt, seedCipher.seedCipherHeader, seedCipher.seedCipher))
       } else {
         throw new Error('unrecognized seedCipher type: ' + seedCipher.type)
       }
