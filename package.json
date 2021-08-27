@@ -24,7 +24,8 @@
   },
   "standard": {
     "ignore": [
-      "docs"
+      "docs",
+      "test/*"
     ],
     "env": "mocha",
     "parser": "babel-eslint"

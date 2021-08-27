@@ -1,10 +1,20 @@
 # hcSeedBundle
 
-Javascript Holochain SeedBundle parsing and generation library.
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-### Documentation
+Javascript SeedBundle parsing and generation library.
 
-[See our JSDoc Generated Documentation](https://holochain.github.io/hcSeedBundle/)
+### Links
+
+- [Git Repo - https://github.com/holochain/hcSeedBundle](https://github.com/holochain/hcSeedBundle)
+- [API Documentation - https://holochain.github.io/hcSeedBundle/](https://holochain.github.io/hcSeedBundle/)
+
+### Rationale
+
+- Applications like Holochain have different requirements than classic blockchain system in terms of key management. Namely there is no need for read-only or hardened wallets (Holochain handles these concepts through capabilities and membranes).
+- Applications like Holochain still have need of hierarchy and determinism in key (or in this case seed) derivation.
+- Since we're using libsodium for hashing, signature, and encryption algorithms, let's use it for derivation as well.
+- To be psychologically compatible with the [Bitcoin "HD Wallet" spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), we will do away with the "context" part of sodium KDF by always setting it to `b"SeedBndl"` and focusing on the `subkey_id` and can declare a chain of subsequent derivations of a 32 byte seed in the form `m/68/1/65/8` where we apply `subkey_id`s 68, 1, 65, then 8 in turn.
 
 ### Derivation Usage
 
@@ -19,7 +29,7 @@ const master = UnlockedSeedBundle.newRandom({
   bundleType: 'master'
 })
 
-// derive a device root seed from the baster
+// derive a device root seed from the master
 const deviceRoot = master.derive(68, {
   bundleType: 'deviceRoot'
 })

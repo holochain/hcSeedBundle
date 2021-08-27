@@ -94,7 +94,7 @@ class PrivSecretBuf {
       if (secret.length !== 32) {
         throw new Error('can only derive secrets of length 32')
       }
-      const newSecret = _sodium.crypto_kdf_derive_from_key(32, subkeyId, 'HoloSeed', secret)
+      const newSecret = _sodium.crypto_kdf_derive_from_key(32, subkeyId, 'SeedBndl', secret)
       return new PrivSecretBuf(newSecret)
     }
 
