@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: SeedCipher</title>
+    <title>JSDoc: Class: SeedCipherSecurityQuestions</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: SeedCipher</h1>
+    <h1 class="page-title">Class: SeedCipherSecurityQuestions</h1>
 
     
 
@@ -29,9 +29,9 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-hcSeedBundle.html">hcSeedBundle</a>.</span>SeedCipher<span class="signature">()</span><span class="type-signature"></span></h2>
+            <span class="ancestors"><a href="module-hcSeedBundle.html">hcSeedBundle</a>.</span>SeedCipherSecurityQuestions<span class="signature">(questions, answers, limitName<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Base class for concrete SeedCiphers.</div>
+            <div class="class-description">SeedCipher locked by three security question answers</div>
         
     
 </header>
@@ -46,7 +46,7 @@
     
 
     
-    <h4 class="name" id="SeedCipher"><span class="type-signature"></span>new SeedCipher<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="SeedCipherSecurityQuestions"><span class="type-signature"></span>new SeedCipherSecurityQuestions<span class="signature">(questions, answers, limitName<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -54,7 +54,7 @@
 
 
 <div class="description">
-    Don't use this directly, use a sub-class.
+    Build this with
 </div>
 
 
@@ -63,6 +63,129 @@
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>questions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">3 security questions</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>answers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;PrivSecretBuf></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">3 security answers (parseSecret(Uint8Array))</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>limitName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">optional limitName (['interactive', 'moderate' *default*, 'sensitive'])</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -98,7 +221,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line151">line 151</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line312">line 312</a>
     </li></ul></dd>
     
 
@@ -162,7 +285,7 @@
 
 
 <div class="description">
-    Generate an encrypted seedCipher for given secretSeed
+    Encrypte a secretSeed SeedCipher with this instance.
 </div>
 
 
@@ -255,7 +378,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line172">line 172</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line352">line 352</a>
     </li></ul></dd>
     
 
@@ -317,7 +440,7 @@
 
 
 <div class="description">
-    Clear out any secret data maintained by this cipher
+    Clear secret data
 </div>
 
 
@@ -361,7 +484,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line162">line 162</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line343">line 343</a>
     </li></ul></dd>
     
 
