@@ -296,12 +296,14 @@ export class SeedCipherPwHash extends SeedCipher {
       _sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
     )
 
-    return {
-      type: 'pwHash',
+    return [
+      'pw',
       salt,
-      seedCipherHeader: header,
-      seedCipher: cipher
-    }
+      memLimit,
+      opsLimit,
+      header,
+      cipher
+    ]
   }
 }
 
@@ -410,13 +412,17 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
       _sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
     )
 
-    return {
-      type: 'securityQuestions',
+    return [
+      'qa',
       salt,
-      questionList: this.#questionList,
-      seedCipherHeader: header,
-      seedCipher: cipher
-    }
+      memLimit,
+      opsLimit,
+      this.#questionList[0],
+      this.#questionList[1],
+      this.#questionList[2],
+      header,
+      cipher
+    ]
   }
 }
 
@@ -425,6 +431,8 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
  */
 export class LockedSeedCipherPwHash extends LockedSeedCipher {
   #salt
+  #memLimit
+  #opsLimit
   #header
   #cipher
 
@@ -433,12 +441,16 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
    *
    * @param {function} - the finishUnlock callback function
    * @param {Uint8Array} - argon salt
+   * @param {number} - argon memLimit
+   * @param {number} - argon opsLimit
    * @param {Uint8Array} - secretstream header
    * @param {Uint8Array} - secretstream cipher
    */
-  constructor (finishUnlockCb, salt, header, cipher) {
+  constructor (finishUnlockCb, salt, memLimit, opsLimit, header, cipher) {
     super(finishUnlockCb)
     this.#salt = salt
+    this.#memLimit = memLimit
+    this.#opsLimit = opsLimit
     this.#header = header
     this.#cipher = cipher
   }
@@ -447,23 +459,20 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
    * Unlock to an UnlockedSeedBundle
    *
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
-   * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
    * @returns {UnlockedSeedBundle}
    */
-  unlock (passphrase, limitName) {
+  unlock (passphrase) {
     if (!(passphrase instanceof PrivSecretBuf)) {
       throw new Error('passphrase required, construct with parseSecret()')
     }
-
-    const { opsLimit, memLimit } = privTxLimits(limitName)
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
       passphrase.get(),
       this.#salt,
-      opsLimit,
-      memLimit,
+      this.#opsLimit,
+      this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
 
@@ -492,8 +501,10 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
  * Unlock a SeedCipher with three security question answers.
  */
 export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
-  #questionList
   #salt
+  #memLimit
+  #opsLimit
+  #questionList
   #header
   #cipher
 
@@ -501,15 +512,19 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
    * You won't use this directly, call UnlockedSeedBundle.fromLocked()
    *
    * @param {function} - the finishUnlock callback function
-   * @param {string[]} - the list of security questions
    * @param {Uint8Array} - argon salt
+   * @param {number} - argon memLimit
+   * @param {number} - argon opsLimit
+   * @param {string[]} - the list of security questions
    * @param {Uint8Array} - secretstream header
    * @param {Uint8Array} - secretstream cipher
    */
-  constructor (finishUnlockCb, questionList, salt, header, cipher) {
+  constructor (finishUnlockCb, salt, memLimit, opsLimit, questionList, header, cipher) {
     super(finishUnlockCb)
-    this.#questionList = questionList
     this.#salt = salt
+    this.#memLimit = memLimit
+    this.#opsLimit = opsLimit
+    this.#questionList = questionList
     this.#header = header
     this.#cipher = cipher
   }
@@ -527,10 +542,9 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
    * Unlock to an UnlockedSeedBundle
    *
    * @param {PrivSecretBuf[]} - 3 security answers (parseSecret(Uint8Array))
-   * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
    * @returns {UnlockedSeedBundle}
    */
-  unlock (answers, limitName) {
+  unlock (answers) {
     if (
       !Array.isArray(answers) ||
       answers.length !== 3
@@ -540,15 +554,13 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
 
     const answerBlob = privNormalizeSecurityAnswers(answers)
 
-    const { opsLimit, memLimit } = privTxLimits(limitName)
-
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
       answerBlob.get(),
       this.#salt,
-      opsLimit,
-      memLimit,
+      this.#opsLimit,
+      this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
 
@@ -652,11 +664,11 @@ export class UnlockedSeedBundle {
    */
   static fromLocked (encodedBytes) {
     const decoded = msgpack.decode(encodedBytes)
-    if (decoded.hcSeedBundleVer !== 0) {
-      throw new Error('invalid hcSeedBundleVer, got: ' + decoded.hcSeedBundleVer)
+    if (!Array.isArray(decoded) || decoded[0] !== 'hcsb0') {
+      throw new Error('invalid bundle, got: ' + JSON.stringify(decoded))
     }
 
-    const appData = msgpack.decode(decoded.appData)
+    const appData = decoded[2].length ? msgpack.decode(decoded[2]) : {}
     const finishUnlockCb = (secretSeed) => {
       return new UnlockedSeedBundle(secretSeed, appData)
     }
@@ -665,13 +677,26 @@ export class UnlockedSeedBundle {
 
     // somehow standard is failing to recognize the usage in the loop
     // eslint-disable-next-line no-unused-vars
-    for (const seedCipher of decoded.seedCipherList) {
-      if (seedCipher.type === 'pwHash') {
-        outList.push(new LockedSeedCipherPwHash(finishUnlockCb, seedCipher.salt, seedCipher.seedCipherHeader, seedCipher.seedCipher))
-      } else if (seedCipher.type === 'securityQuestions') {
-        outList.push(new LockedSeedCipherSecurityQuestions(finishUnlockCb, seedCipher.questionList, seedCipher.salt, seedCipher.seedCipherHeader, seedCipher.seedCipher))
+    for (const seedCipher of decoded[1]) {
+      if (seedCipher[0] === 'pw') {
+        const salt = seedCipher[1]
+        const memLimit = seedCipher[2]
+        const opsLimit = seedCipher[3]
+        const header = seedCipher[4]
+        const cipher = seedCipher[5]
+        outList.push(new LockedSeedCipherPwHash(finishUnlockCb, salt, memLimit, opsLimit, header, cipher))
+      } else if (seedCipher[0] === 'qa') {
+        const salt = seedCipher[1]
+        const memLimit = seedCipher[2]
+        const opsLimit = seedCipher[3]
+        const q1 = seedCipher[4]
+        const q2 = seedCipher[5]
+        const q3 = seedCipher[6]
+        const header = seedCipher[7]
+        const cipher = seedCipher[8]
+        outList.push(new LockedSeedCipherSecurityQuestions(finishUnlockCb, salt, memLimit, opsLimit, [q1, q2, q3], header, cipher))
       } else {
-        throw new Error('unrecognized seedCipher type: ' + seedCipher.type)
+        throw new Error('unrecognized seedCipher type: ' + seedCipher[0])
       }
     }
 
@@ -733,11 +758,11 @@ export class UnlockedSeedBundle {
       seedCipher.zero()
     }
 
-    const bundle = {
-      hcSeedBundleVer: 0,
-      seedCipherList: encodedSeedCipherList,
-      appData: msgpack.encode(this.appData)
-    }
+    const bundle = [
+      'hcsb0',
+      encodedSeedCipherList,
+      msgpack.encode(this.appData)
+    ]
 
     return msgpack.encode(bundle)
   }
@@ -758,7 +783,7 @@ export class UnlockedSeedBundle {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Aug 27 2021 14:35:56 GMT-0600 (Mountain Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Wed Sep 01 2021 14:27:17 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

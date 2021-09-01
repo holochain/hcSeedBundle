@@ -29,7 +29,7 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-hcSeedBundle.html">hcSeedBundle</a>.</span>LockedSeedCipherSecurityQuestions<span class="signature">(finishUnlockCb, questionList, salt, header, cipher)</span><span class="type-signature"></span></h2>
+            <span class="ancestors"><a href="module-hcSeedBundle.html">hcSeedBundle</a>.</span>LockedSeedCipherSecurityQuestions<span class="signature">(finishUnlockCb, salt, memLimit, opsLimit, questionList, header, cipher)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Unlock a SeedCipher with three security question answers.</div>
         
@@ -46,7 +46,7 @@
     
 
     
-    <h4 class="name" id="LockedSeedCipherSecurityQuestions"><span class="type-signature"></span>new LockedSeedCipherSecurityQuestions<span class="signature">(finishUnlockCb, questionList, salt, header, cipher)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="LockedSeedCipherSecurityQuestions"><span class="type-signature"></span>new LockedSeedCipherSecurityQuestions<span class="signature">(finishUnlockCb, salt, memLimit, opsLimit, questionList, header, cipher)</span><span class="type-signature"></span></h4>
     
 
     
@@ -113,29 +113,6 @@
 
         <tr>
             
-                <td class="name"><code>questionList</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the list of security questions</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>salt</code></td>
             
 
@@ -153,6 +130,75 @@
             
 
             <td class="description last">argon salt</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>memLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">argon memLimit</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opsLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">argon opsLimit</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>questionList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the list of security questions</td>
         </tr>
 
     
@@ -239,7 +285,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line466">line 466</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line475">line 475</a>
     </li></ul></dd>
     
 
@@ -347,7 +393,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line494">line 494</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line509">line 509</a>
     </li></ul></dd>
     
 
@@ -401,7 +447,7 @@
     
 
     
-    <h4 class="name" id="unlock"><span class="type-signature"></span>unlock<span class="signature">(answers, limitName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {UnlockedSeedBundle}</span></h4>
+    <h4 class="name" id="unlock"><span class="type-signature"></span>unlock<span class="signature">(answers)</span><span class="type-signature"> &rarr; {UnlockedSeedBundle}</span></h4>
     
 
     
@@ -433,8 +479,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -460,51 +504,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
             <td class="description last">3 security answers (parseSecret(Uint8Array))</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>limitName</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">optional limitName (['interactive', 'moderate' *default*, 'sensitive'])</td>
         </tr>
 
     
@@ -545,7 +548,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line505">line 505</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line519">line 519</a>
     </li></ul></dd>
     
 
@@ -615,7 +618,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Aug 27 2021 14:35:56 GMT-0600 (Mountain Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Wed Sep 01 2021 14:27:17 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,24 +1,11 @@
-# hcSeedBundle
+import assert from 'assert'
+import * as hcSeedBundle from '../index.js'
+import fixtures from './seed_bundle_test_fixtures.js'
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+import _sodium from 'libsodium-wrappers'
 
-Javascript SeedBundle parsing and generation library.
-
-### Links
-
-- [Git Repo - https://github.com/holochain/hcSeedBundle](https://github.com/holochain/hcSeedBundle)
-- [API Documentation - https://holochain.github.io/hcSeedBundle/](https://holochain.github.io/hcSeedBundle/)
-
-### Rationale
-
-- Applications like Holochain have different requirements than classic blockchain system in terms of key management. Namely there is no need for read-only or hardened wallets (Holochain handles these concepts through capabilities and membranes).
-- Applications like Holochain still have need of hierarchy and determinism in key (or in this case seed) derivation.
-- Since we're using libsodium for hashing, signature, and encryption algorithms, let's use it for derivation as well.
-- To be psychologically compatible with the [Bitcoin "HD Wallet" spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), we will do away with the "context" part of sodium KDF by always setting it to `b"SeedBndl"` and focusing on the `subkey_id` and can declare a chain of subsequent derivations of a 32 byte seed in the form `m/68/1/65/8` where we apply `subkey_id`s 68, 1, 65, then 8 in turn.
-
-### Derivation Usage
-
-```javascript
+describe('Demo Tests Copied to README.md', () => {
+  it('Derivation Usage', async () => {
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
@@ -35,11 +22,9 @@ Javascript SeedBundle parsing and generation library.
     // clear our secrets
     master.zero()
     deviceRoot.zero()
-```
+  })
 
-### Locking (encrypting) a SeedBundle
-
-```javascript
+  it('Locking (encrypting) a SeedBundle', async () => {
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
@@ -57,11 +42,9 @@ Javascript SeedBundle parsing and generation library.
 
     // clear our secrets
     master.zero()
-```
+  })
 
-### Locking (encrypting) a SeedBundle with Security Questions
-
-```javascript
+  it('Locking (encrypting) a SeedBundle with Security Questions', async () => {
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
@@ -90,11 +73,9 @@ Javascript SeedBundle parsing and generation library.
 
     // clear our secrets
     master.zero()
-```
+  })
 
-### Unlocking (decrypting) a SeedBundle
-
-```javascript
+  it('Unlocking (decrypting) a SeedBundle', async () => {
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
@@ -106,9 +87,9 @@ Javascript SeedBundle parsing and generation library.
     // decode the SeedCiphers that will let us unlock this bundle
     const cipherList = hcSeedBundle.UnlockedSeedBundle.fromLocked(encodedBytes)
 
-    // we only support PwHash right now
+    // the demo is encrypted with PwHash
     if (!(cipherList[0] instanceof hcSeedBundle.LockedSeedCipherPwHash)) {
-      throw new Error('non-PwHash SeedCiphers not implemented')
+      throw new Error('Expecting PwHash')
     }
 
     // unlock with the passphrase
@@ -117,4 +98,5 @@ Javascript SeedBundle parsing and generation library.
 
     // clear our secrets
     master.zero()
-```
+  })
+})

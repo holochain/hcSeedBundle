@@ -59,75 +59,95 @@
 <li>To be psychologically compatible with the <a href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">Bitcoin &quot;HD Wallet&quot; spec</a>, we will do away with the &quot;context&quot; part of sodium KDF by always setting it to <code>b&quot;SeedBndl&quot;</code> and focusing on the <code>subkey_id</code> and can declare a chain of subsequent derivations of a 32 byte seed in the form <code>m/68/1/65/8</code> where we apply <code>subkey_id</code>s 68, 1, 65, then 8 in turn.</li>
 </ul>
 <h3>Derivation Usage</h3>
-<pre class="prettyprint source lang-javascript"><code>import { seedBundleReady, UnlockedSeedBundle } from 'hcSeedBundle'
+<pre class="prettyprint source lang-javascript"><code>    // await library functions ready to call
+    await hcSeedBundle.seedBundleReady
 
-// await library functions ready to call
-await seedBundleReady
+    // generate a new pure entropy master seed
+    const master = hcSeedBundle.UnlockedSeedBundle.newRandom({
+      bundleType: 'master'
+    })
 
-// generate a new pure entropy master seed
-const master = UnlockedSeedBundle.newRandom({
-  bundleType: 'master'
-})
+    // derive a device root seed from the master
+    const deviceRoot = master.derive(68, {
+      bundleType: 'deviceRoot'
+    })
 
-// derive a device root seed from the master
-const deviceRoot = master.derive(68, {
-  bundleType: 'deviceRoot'
-})
-
-// clear our secrets
-master.zero()
-deviceRoot.zero()
+    // clear our secrets
+    master.zero()
+    deviceRoot.zero()
 </code></pre>
 <h3>Locking (encrypting) a SeedBundle</h3>
-<pre class="prettyprint source lang-javascript"><code>import {
-  seedBundleReady,
-  parseSecret,
-  UnlockedSeedBundle,
-  SeedCipherPwHash
-} from 'hcSeedBundle'
+<pre class="prettyprint source lang-javascript"><code>    // await library functions ready to call
+    await hcSeedBundle.seedBundleReady
 
-// await library functions ready to call
-await seedBundleReady
+    // generate a new pure entropy master seed
+    const master = hcSeedBundle.UnlockedSeedBundle.newRandom({
+      bundleType: 'master'
+    })
 
-// generate a new pure entropy master seed
-const master = UnlockedSeedBundle.newRandom({
-  bundleType: 'master'
-})
+    // we need the passphrase as a Uint8Array
+    const pw = (new TextEncoder()).encode('test-passphrase')
+    const encodedBytes = master.lock([
+      new hcSeedBundle.SeedCipherPwHash(
+        hcSeedBundle.parseSecret(pw), 'interactive')
+    ])
 
-// we need the passphrase as a Uint8Array
-const pw = (new TextEncoder()).encode('test-passphrase')
-const encodedBytes = master.lock([
-  new SeedCipherPwHash(parseSecret(pw))
-])
+    // clear our secrets
+    master.zero()
+</code></pre>
+<h3>Locking (encrypting) a SeedBundle with Security Questions</h3>
+<pre class="prettyprint source lang-javascript"><code>    // await library functions ready to call
+    await hcSeedBundle.seedBundleReady
 
-// clear our secrets
-master.zero()
+    // generate a new pure entropy master seed
+    const master = hcSeedBundle.UnlockedSeedBundle.newRandom({
+      bundleType: 'master'
+    })
+
+    // we need the answers as a Uint8Arrays
+    const pw = pw => hcSeedBundle.parseSecret(
+      (new TextEncoder()).encode(pw)
+    )
+
+    const encodedBytes = master.lock([
+      new hcSeedBundle.SeedCipherSecurityQuestions([
+        'Favorite Color?',
+        'Favorite Hair?',
+        'Favorite Food?'
+      ], [
+        pw('blue'),
+        pw('big'),
+        pw('begal')
+      ],
+      'interactive'
+    )])
+
+    // clear our secrets
+    master.zero()
 </code></pre>
 <h3>Unlocking (decrypting) a SeedBundle</h3>
-<pre class="prettyprint source lang-javascript"><code>import {
-  seedBundleReady,
-  parseSecret,
-  UnlockedSeedBundle,
-  LockedSeedCipherPwHash
-} from 'hcSeedBundle'
+<pre class="prettyprint source lang-javascript"><code>    // await library functions ready to call
+    await hcSeedBundle.seedBundleReady
 
-// await library functions ready to call
-await seedBundleReady
+    const encodedHex = '93a568637362309196a27077d812482bfe23f93b21311bf50e96ece34dedce0400000002c718122a108ef8fd0568658b0af82ec194f70ae147aecf89a9845dc73112f6a92e61911d9211ee8152d2de8a8630c1a32b96167e0a9e22eb2516b33d51b5e8745367ee8140cd010aa01e749b41154ec41381aa62756e646c6554797065a66d6173746572'
 
-// decode the SeedCiphers that will let us unlock this bundle
-const cipherList = UnlockedSeedBundle.fromLocked( /* encodedBytes here */ )
+    const encodedBytes = new Uint8Array(
+      encodedHex.match(/.{1,2}/g).map(b => parseInt(b, 16)))
 
-// we only support PwHash right now
-if (!(cipherList[0] instanceof LockedSeedCipherPwHash)) {
-  throw new Error('non-PwHash SeedCiphers not implemented')
-}
+    // decode the SeedCiphers that will let us unlock this bundle
+    const cipherList = hcSeedBundle.UnlockedSeedBundle.fromLocked(encodedBytes)
 
-// unlock with the passphrase
-const pw = (new TextEncoder()).encode('test-passphrase')
-const master = cipherList[0].unlock(parseSecret(pw))
+    // we only support PwHash right now
+    if (!(cipherList[0] instanceof hcSeedBundle.LockedSeedCipherPwHash)) {
+      throw new Error('non-PwHash SeedCiphers not implemented')
+    }
 
-// clear our secrets
-master.zero()
+    // unlock with the passphrase
+    const pw = (new TextEncoder()).encode('test-passphrase')
+    const master = cipherList[0].unlock(hcSeedBundle.parseSecret(pw))
+
+    // clear our secrets
+    master.zero()
 </code></pre></article>
     </section>
 
@@ -145,7 +165,7 @@ master.zero()
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Aug 27 2021 14:35:56 GMT-0600 (Mountain Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Wed Sep 01 2021 14:27:17 GMT-0600 (Mountain Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
