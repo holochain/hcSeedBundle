@@ -1,6 +1,18 @@
 {
-  "name": "hcSeedBundle",
+  "name": "@holochain/hcSeedBundle",
   "version": "0.0.1",
+  "description": "Javascript SeedBundle parsing and generation library.",
+  "keywords": [
+    "holo",
+    "holochain",
+    "keystore",
+    "secret",
+    "cryptography"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "github:holochain/hcSeedBundle.git"
+  },
   "main": "index.js",
   "type": "module",
   "license": "Apache-2.0",
