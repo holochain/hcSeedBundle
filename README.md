@@ -52,8 +52,11 @@ Javascript SeedBundle parsing and generation library.
     const pw = (new TextEncoder()).encode('test-passphrase')
     const encodedBytes = master.lock([
       new hcSeedBundle.SeedCipherPwHash(
-        hcSeedBundle.parseSecret(pw), 'interactive')
+        hcSeedBundle.parseSecret(pw), 'minimum')
     ])
+
+    // -- if you want to regenerate for (decrypting) below:
+    // console.log(encodedBytes.toString('base64'))
 
     // clear our secrets
     master.zero()
@@ -85,7 +88,7 @@ Javascript SeedBundle parsing and generation library.
         pw('big'),
         pw('begal')
       ],
-      'interactive'
+      'minimum'
     )])
 
     // clear our secrets
@@ -98,17 +101,14 @@ Javascript SeedBundle parsing and generation library.
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
-    const encodedHex = '93a568637362309196a27077d812482bfe23f93b21311bf50e96ece34dedce0400000002c718122a108ef8fd0568658b0af82ec194f70ae147aecf89a9845dc73112f6a92e61911d9211ee8152d2de8a8630c1a32b96167e0a9e22eb2516b33d51b5e8745367ee8140cd010aa01e749b41154ec41381aa62756e646c6554797065a66d6173746572'
-
-    const encodedBytes = new Uint8Array(
-      encodedHex.match(/.{1,2}/g).map(b => parseInt(b, 16)))
+    const encodedBytes = Buffer.from('k6VoY3NiMJGWonB32BIdrYjnnyFmjnPliWy14tDZzSAAAccYErS20d5w0QPg9NgApbNniDBToDq8Gn1Mm8cxEntSAEiSvIhJGV9Z/jsmJKVWxI1Endpj1QsIHKciZ46oyOWLrCRHTQjkX8FeZ86xBfvEE4GqYnVuZGxlVHlwZaZtYXN0ZXI=', 'base64')
 
     // decode the SeedCiphers that will let us unlock this bundle
     const cipherList = hcSeedBundle.UnlockedSeedBundle.fromLocked(encodedBytes)
 
-    // we only support PwHash right now
+    // the demo is encrypted with PwHash
     if (!(cipherList[0] instanceof hcSeedBundle.LockedSeedCipherPwHash)) {
-      throw new Error('non-PwHash SeedCiphers not implemented')
+      throw new Error('Expecting PwHash')
     }
 
     // unlock with the passphrase
