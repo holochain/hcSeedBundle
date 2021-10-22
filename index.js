@@ -130,7 +130,10 @@ function privTxLimits (limitName) {
   let opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MODERATE
   let memLimit = _sodium.crypto_pwhash_MEMLIMIT_MODERATE
 
-  if (limitName === 'interactive') {
+  if (limitName === 'minimum') {
+    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MIN
+    memLimit = _sodium.crypto_pwhash_MEMLIMIT_MIN
+  } else if (limitName === 'interactive') {
     opsLimit = _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE
     memLimit = _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE
   } else if (limitName === 'sensitive') {
@@ -240,6 +243,8 @@ export class SeedCipherPwHash extends SeedCipher {
       throw new Error('secretSeed must be an internal secret buffer')
     }
 
+    const pwHash = _sodium.crypto_generichash(64, this.#passphrase.get())
+
     const salt = _sodium.randombytes_buf(16)
 
     const { opsLimit, memLimit } = privTxLimits(this.#limitName)
@@ -247,12 +252,14 @@ export class SeedCipherPwHash extends SeedCipher {
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
-      this.#passphrase.get(),
+      pwHash,
       salt,
       opsLimit,
       memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
+
+    _sodium.memzero(pwHash)
 
     // initialize encryption
     const { state, header } = _sodium
@@ -356,6 +363,8 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
       throw new Error('secretSeed must be an internal secret buffer')
     }
 
+    const pwHash = _sodium.crypto_generichash(64, this.#answerBlob.get())
+
     const salt = _sodium.randombytes_buf(16)
 
     const { opsLimit, memLimit } = privTxLimits(this.#limitName)
@@ -363,12 +372,14 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
-      this.#answerBlob.get(),
+      pwHash,
       salt,
       opsLimit,
       memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
+
+    _sodium.memzero(pwHash)
 
     // initialize encryption
     const { state, header } = _sodium
@@ -438,17 +449,21 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
       throw new Error('passphrase required, construct with parseSecret()')
     }
 
+    const pwHash = _sodium.crypto_generichash(64, passphrase.get())
+
+    passphrase.zero()
+
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
-      passphrase.get(),
+      pwHash,
       this.#salt,
       this.#opsLimit,
       this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
 
-    passphrase.zero()
+    _sodium.memzero(pwHash)
 
     // initialize decryption
     const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
@@ -525,18 +540,20 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
     }
 
     const answerBlob = privNormalizeSecurityAnswers(answers)
+    const pwHash = _sodium.crypto_generichash(64, answerBlob.get())
+    answerBlob.zero()
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
       32,
-      answerBlob.get(),
+      pwHash,
       this.#salt,
       this.#opsLimit,
       this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
     )
 
-    answerBlob.zero()
+    _sodium.memzero(pwHash)
 
     // initialize decryption
     const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(

@@ -2,7 +2,7 @@ export default {
   "success": [
     {
       "desc": "two-pass-generated-by-javascript",
-      "cipher": "k6VoY3NiMJKWonB32BIEPJ9l6GptdyuE605U2Z6AzgQAAAACxxgSMCdlqqda1V9NzRzqLxH1nOjfU9EpBWpCxzESxLGepXDjUyO5k7uysDd6kHU7uzjJhCFHWoJMVBQ10idH4Cgku0Q1tPNZSWYbwYLt7JaicHfYEgCJTlAngEqLIb8LrwMKg5fOBAAAAALHGBL6Iaka8OICDF8YH3NHuzhgXoPZnLNKZ_XHMRKc3h3IshxXAzK-DL__auYU7K1flNLmyr5MvB1-no1qhuSJV396_ErKibVltZCbYn0ixAGA",
+      "cipher": "k6VoY3NiMJKWonB32BLsEEGX8xbw7lBOyJQGFgPLzSAAAccYElNQmb8oxQej0CbEoSFJvIvhEnLYtOGnGMcxEpUG9TP_zvF2pkNvdG5usnVgFVAMOavTPf8F_Ts7Q-AnYGDTwoPyCkimKtK3d8q55WiWonB32BJK5qKkjStcK1qUSsYsBYUazSAAAccYEsfI7d3qTDyvGy0VUwUpDRuydUEHIH2WEMcxEq5RLUG0R54ipjX3ZtHPb9dWWUZGTyMdZBNvIpeewOrxNLhO5H1IgsCFtMtHYZT3qszEAYA",
       "unlock": [
         {
           "type": "pwHash",
@@ -13,18 +13,18 @@ export default {
           "passphrase": "zombies2"
         }
       ],
-      "signPubKey": "1wJgw78QEoCVkHtLckR5u0Ak1Z0PGCjo9mwrYbvFFY8",
+      "signPubKey": "PnH1TNoyB37_RsePIaxb3EgAsRpoTwudRuYUXN0d6LY",
       "derivations": {
-        "m/0/1/2/3/4/5/6/7/8/9": "oXyWF6oUWVTeyxXDHx16nFqssdjFxxC1Ka0Xq8IXUCo",
-        "m/68": "cxWsMWsypoe4wcHZ2ptmYwA4bP0CydwUCW0kNag8Wyk",
-        "m/68/0": "yXhzkY93NGLLJg2hpEeN1i8bqDBQroGorc8ZEEmqfo8",
-        "m/68/0/65": "AUaylELwtjzWK-FfCiE6UtMzbTHzqZO7_KS_v6plztM",
-        "m/68/0/65/0": "Dz3hw6Ar3MTeUG3uXENbZGKQnR-ScndDL7VGNIBcmwI"
+        "m/0/1/2/3/4/5/6/7/8/9": "C58JmMycJCPVNwjJ3CpTGhME8OlgftJBRTbJauSCBcc",
+        "m/68": "Vg3yagfQTGmSQcIdJf-CXdTdHzoVNkugn0rPOeecVR0",
+        "m/68/0": "3S8vAvvKSq5jlke0mEyWIiy51vR18C0pRbC5Apbouf0",
+        "m/68/0/65": "s1GpWrpuDzkEsa-69xbDRN3FFbvUlwTA1VR9VMP0JHg",
+        "m/68/0/65/0": "lNJZvwjZd4Sk-XCAQeYS_IPlfiZdHUV6JDtmC270WhY"
       }
     },
     {
       "desc": "pass-and-qa-generated-by-javascript",
-      "cipher": "k6VoY3NiMJKWonB32BKe-O6vMrDjWVnpVhj98V5NzgQAAAACxxgSDFmHD_c8i98X9RigE-BTe4d6wcqUe1ehxzESDe9GtXA6mLKwFUZXYhuV2-IpuXLZCrPz1LA1IE4mYyPj1N-0FjYDwZ0wkI_VoBfdcJmicWHYEo7LoXFAsjBgGb05G-ocXgTOBAAAAAKjcS1ho3EtYqNxLWPHGBK5Mu8Ollp7-PwBU10cXAazrXh35S4jyTnHMRIVwCZgcK5pPRyxyhT7qTzZtx89ILV1JbSfvZVTZCt4h7Tlk9XFEg61Nf_ewqp_sYXPxAGA",
+      "cipher": "k6VoY3NiMJKWonB32BLx_zTiCopvQouZlQhx0FR7zSAAAccYEldLiTXxRIiJLOD0j629CCh3ejOvesF0-8cxEvDF-54VItNs6YPR9vfKsC0r3CPGiydE6NnlxnZAcTiVXX4Dap9-skeo6ZFjqjIgrXWZonFh2BL-p6Nd9E0m-lxqUDEjl6fUzSAAAaNxLWGjcS1io3EtY8cYEnmwXwJM1f7N3Q__fP3WAv-jwwzSzkrZP8cxEhFllra6jrjXh_6cg7_hz190dQ_uakJjRqlMQqHCgKGD7CAmQh3WFjYQAWt7CBy3PMbEAYA",
       "unlock": [
         {
           "type": "pwHash",
@@ -36,14 +36,14 @@ export default {
           "answerList": ["a-a", "a-b", "a-c"]
         }
       ],
-      "signPubKey": "c1JiJhZrmi9vwQfQMaicsLIYmkSEMUZGgKvHzcqSXiE",
+      "signPubKey": "CF1utbr3L-wpE0qKwVM5ZNIfyzM6bmplwcU0SM3liqo",
       "derivations": {
-        "m/68/0/65/0": "F1EnZMjczH5z7B3nnfsZ12X3VjtHhPY2TFyxnXgyKj0"
+        "m/68/0/65/0": "dO7kZSMcSWSQpVEhLmGPS2c3PFid9GtSz0V4m6Vvhlo"
       }
     },
     {
       "desc": "two-pass-generated-by-rust",
-      "cipher": "k6VoY3NiMJKWonB3xBDvitO9hgaawrOELYklltZTzgQAAAACxBh3AQ92Ex9xhyznO8YRrRoSC_Sf51qX-9vEMUz6qA95RKgTSiMKkozBZBRUaOxQwfs0buNd6G_EfBKdTETmgZmPxmh99c5m5RbBlxmWonB3xBAChvlVAyrUTffj0Q8zEfaEzgQAAAACxBhWneCx9eUb40tRZNFxHVrBPZlB-ABNhCDEMeEB6Vxnw1sddmwrocq8kfluP5eT2Ur9IUXjQZIyfmDkv1PYU5EXVOCTADKKqq2ZqgjEAA",
+      "cipher": "k6VoY3NiMJKWonB3xBC70Y5v4B4DEJ6bZY9ZNeCvzSAAAcQYVQbypAbwQxJMMEYAiKvt9_PbGFCE3nHyxDFlLv9ib9WeDW0wjZFPFtaFW_js2RBfUt34b-MfeUnQ1ZZfe1CAdSZVFuQ_7c8CXp_FlqJwd8QQ2Lf-b-ufVr-1_3heZcDKZc0gAAHEGM7lURX1C40gdwPo_-KIyQCWq8_MVh74SMQxKui_9Aqo_3v8dmDYxdPEe1qHvyguQDuXxxBbLDMoMjzteTTnG_z2SWptfrjQHd6sNcQA",
       "unlock": [
         {
           "type": "pwHash",
@@ -54,14 +54,14 @@ export default {
           "passphrase": "second-pass"
         }
       ],
-      "signPubKey": "6a4EYRssQjP9tPMZzXfowzxVeevR3ow61fuAyQTKFVU",
+      "signPubKey": "ovEvMUVcDkmcjzk_fjIF8RgOAS2WX40wLLVuqZpZy-o",
       "derivations": {
-        "m/68/0/65/0": "tJvU7AuDLBK3Aytmu5XWorMjYTTOpmrpbttvStVIoIU"
+        "m/68/0/65/0": "GBDlf1xxlanbQcX83w7rCbJkZ8A0ejLPdYddjeQ4dI4"
       }
     },
     {
       "desc": "pass-and-qa-generated-by-rust",
-      "cipher": "k6VoY3NiMJKWonB3xBAGIKkVeLcUARqvvkLnmbtVzgQAAAACxBjMEISIUf4ioqIpkumT0pCM_zhbZYJrJ1TEMdPLC2oEJD_IyLtuMl0vHidD0Zd_0Lv2YkWhw43rzO0a6AuhCpfeRDq-mq51z8xiEZWZonFhxBDN3Pdi36-ZWRcX4lEbR3T_zgQAAAACr0Zhdm9yaXRlIENvbG9yP6pGaXJzdCBQZXQ_pUhhaXI_xBh3fIjNVwiQuWwoH2GRIXxPfnFF2DeEHcXEMSJpFhAyt3d5slfJkNpES13T7YraNPw2QDDtDop3oXdo26ZQmvB_KmU02mOF4bkd5fzEAA",
+      "cipher": "k6VoY3NiMJKWonB3xBCaTAWCGW9TjLxw4U6jkc-YzSAAAcQYY-56t-6zerft5QuI-G9Z2V8Crd6xIO_pxDHSENNDFJLpCbPE6l64-_RZdSbaAB2EdvwRiZoWONH_o3qgCtCmjfyWPNiKQQpdiyJRmaJxYcQQci5Iy9v5sj1mSOw6MYIV1M0gAAGvRmF2b3JpdGUgQ29sb3I_qkZpcnN0IFBldD-lSGFpcj_EGFGah7pMTe-Iazc5F-jmIvFiPm1TJgZwAsQxv4nlOpAseeZ7b2dcTriyx9AHqwVcRYoM0r2H72jmDYKnac4VApjl1TgUywR_yqX5NcQA",
       "unlock": [
         {
           "type": "pwHash",
@@ -73,9 +73,9 @@ export default {
           "answerList": ["\t  BLuE", "ZoMbOrG\t ", " nope "]
         }
       ],
-      "signPubKey": "6BZCrcX_sL1uoPR_HXv0uTfbTg2eMiyyQMnAp713uP4",
+      "signPubKey": "-04bl8RtksINXF5ZZGicrrDEfpxHxQdAirikmTGufIc",
       "derivations": {
-        "m/68/0/65/0": "DJR1AzDDMIUHwZOEc8G2tXcdIFye7KV91uTmHhvuV7A"
+        "m/68/0/65/0": "s4FLn5d0UEQqa2YYqO0goC2ITeGGyKvVp9MYAMpSyRg"
       }
     }
   ]

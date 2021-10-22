@@ -17,13 +17,13 @@ async function generate (s) {
   for (const u of s.unlock) {
     if (u.type === 'pwHash') {
       const pw = (new TextEncoder()).encode(u.passphrase)
-      cList.push(new SeedCipherPwHash(parseSecret(pw), 'interactive'))
+      cList.push(new SeedCipherPwHash(parseSecret(pw), 'minimum'))
     } else if (u.type === 'securityQuestions') {
       const a1 = parseSecret((new TextEncoder()).encode(u.answerList[0]))
       const a2 = parseSecret((new TextEncoder()).encode(u.answerList[1]))
       const a3 = parseSecret((new TextEncoder()).encode(u.answerList[2]))
       const answerList = [a1, a2, a3]
-      cList.push(new SeedCipherSecurityQuestions(u.questionList, answerList, 'interactive'))
+      cList.push(new SeedCipherSecurityQuestions(u.questionList, answerList, 'minimum'))
     } else {
       throw new Error('invalid SeedCipher: ' + JSON.stringify(u))
     }
@@ -62,14 +62,14 @@ describe('SeedBundle Test Suite', () => {
           const seedCipher = cList[ui]
           if (unlock.type === 'pwHash') {
             const pw = (new TextEncoder()).encode(unlock.passphrase)
-            sList.push(seedCipher.unlock(parseSecret(pw), 'interactive'))
+            sList.push(seedCipher.unlock(parseSecret(pw), 'minimum'))
           } else if (unlock.type === 'securityQuestions') {
             const a1 = (new TextEncoder()).encode(unlock.answerList[0])
             const a2 = (new TextEncoder()).encode(unlock.answerList[1])
             const a3 = (new TextEncoder()).encode(unlock.answerList[2])
             const answerList = [parseSecret(a1), parseSecret(a2), parseSecret(a3)]
             assert.deepEqual(unlock.questionList, seedCipher.getQuestionList())
-            sList.push(seedCipher.unlock(answerList, 'interactive'))
+            sList.push(seedCipher.unlock(answerList, 'minimum'))
           } else {
             throw new Error('invalid SeedCipher: ' + seedCipher)
           }
@@ -120,7 +120,7 @@ describe('SeedBundle Test Suite', () => {
 
     const pw1 = (new TextEncoder()).encode('test-passphrase')
     const masterEncoded = master.lock([
-      new SeedCipherPwHash(parseSecret(pw1), 'interactive')
+      new SeedCipherPwHash(parseSecret(pw1), 'minimum')
     ])
 
     master.zero()
@@ -128,7 +128,7 @@ describe('SeedBundle Test Suite', () => {
     const unlockCipherList = UnlockedSeedBundle.fromLocked(masterEncoded)
 
     const pw2 = (new TextEncoder()).encode('test-passphrase')
-    const master2 = unlockCipherList[0].unlock(parseSecret(pw2), 'interactive')
+    const master2 = unlockCipherList[0].unlock(parseSecret(pw2), 'minimum')
 
     assert.equal(master.signPubKey, master2.signPubKey)
 
@@ -160,7 +160,7 @@ describe('SeedBundle Test Suite', () => {
           parseSecret(a2),
           parseSecret(a3)
         ],
-        'interactive'
+        'minimum'
       )
     ])
 
@@ -177,7 +177,7 @@ describe('SeedBundle Test Suite', () => {
       parseSecret(b1),
       parseSecret(b2),
       parseSecret(b3)
-    ], 'interactive')
+    ], 'minimum')
 
     assert.equal(master.signPubKey, master2.signPubKey)
 
