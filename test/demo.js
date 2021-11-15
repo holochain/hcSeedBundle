@@ -1,7 +1,4 @@
-import assert from 'assert'
 import * as hcSeedBundle from '../index.js'
-import fixtures from './seed_bundle_test_fixtures.js'
-
 import _sodium from 'libsodium-wrappers'
 
 describe('Demo Tests Copied to README.md', () => {
@@ -41,7 +38,7 @@ describe('Demo Tests Copied to README.md', () => {
     ])
 
     // -- if you want to regenerate for (decrypting) below:
-    // console.log(encodedBytes.toString('base64'))
+    // console.log(Buffer.from(encodedBytes).toString('base64'))
 
     // clear our secrets
     master.zero()
@@ -82,11 +79,9 @@ describe('Demo Tests Copied to README.md', () => {
     // await library functions ready to call
     await hcSeedBundle.seedBundleReady
 
-    const encodedBytes = Buffer.from('k6VoY3NiMJGWonB32BIdrYjnnyFmjnPliWy14tDZzSAAAccYErS20d5w0QPg9NgApbNniDBToDq8Gn1Mm8cxEntSAEiSvIhJGV9Z/jsmJKVWxI1Endpj1QsIHKciZ46oyOWLrCRHTQjkX8FeZ86xBfvEE4GqYnVuZGxlVHlwZaZtYXN0ZXI=', 'base64')
-
+    const encodedBytes = Buffer.from('k6VoY3NiMJGWonB3xBD5Ov1Vas4XnV1XPsf8ddCqzSAAAcQYkO36tg8NHoec02I7KtxfX+ZnmBzIz+SoxDFDNfr4/9811ugf18FiRSywOyVagFHIRTyrfV3jZLRt6W0r7WuepaQLjlFu4jgVMrd2xBOBqmJ1bmRsZVR5cGWmbWFzdGVy', 'base64')
     // decode the SeedCiphers that will let us unlock this bundle
     const cipherList = hcSeedBundle.UnlockedSeedBundle.fromLocked(encodedBytes)
-
     // the demo is encrypted with PwHash
     if (!(cipherList[0] instanceof hcSeedBundle.LockedSeedCipherPwHash)) {
       throw new Error('Expecting PwHash')
