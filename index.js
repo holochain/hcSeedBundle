@@ -3,7 +3,7 @@
  */
 
 import _sodium from 'libsodium-wrappers'
-import msgpack from 'msgpack-lite'
+import msgpack from 'tiny-msgpack'
 
 const _sodiumCfg = {
   sodiumReady: false
