@@ -24,7 +24,7 @@
     "doc-open": "npm run-script doc && xdg-open ./docs/index.html"
   },
   "dependencies": {
-    "libsodium-wrappers": "^0.7.9",
+    "libsodium-wrappers-sumo": "^0.7.13",
     "tiny-msgpack": "^1.0.2"
   },
   "devDependencies": {

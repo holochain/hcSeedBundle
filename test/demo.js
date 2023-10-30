@@ -1,5 +1,5 @@
 import * as hcSeedBundle from '../index.js'
-import _sodium from 'libsodium-wrappers'
+import _sodium from 'libsodium-wrappers-sumo'
 
 describe('Demo Tests Copied to README.md', () => {
   it('Derivation Usage', async () => {

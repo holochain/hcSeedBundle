@@ -8,7 +8,7 @@ import {
 } from '../index.js'
 import fixtures from './seed_bundle_test_fixtures.js'
 
-import _sodium from 'libsodium-wrappers'
+import _sodium from 'libsodium-wrappers-sumo'
 
 async function generate (s) {
   const master = UnlockedSeedBundle.newRandom({})

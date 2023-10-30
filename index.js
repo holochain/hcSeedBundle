@@ -2,7 +2,7 @@
  *
  */
 
-import _sodium from 'libsodium-wrappers'
+import _sodium from 'libsodium-wrappers-sumo'
 import msgpack from 'tiny-msgpack'
 
 const _sodiumCfg = {
