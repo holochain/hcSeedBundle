@@ -51,12 +51,19 @@ describe.only("Example tests for david", () => {
     /** Generate Device Seed */
     // We can use the device number as the derivation path
     let deviceNumber = 1
-    await derive(
+    let device_seed = await derive(
       deviceNumber,
       "deviceRoot",
       new TextEncoder().encode("passphrase")
     )
 
+    let app_key_1 = device_seed.derive(0);
+    let app_key_2 = device_seed.derive(1);
+    let app_key_3 = device_seed.derive(2);
+    console.log(`App signPubkey: ${app_key_1.signPubKey}`)
+    console.log(`App signPubkey: ${app_key_2.signPubKey}`)
+    console.log(`App signPubkey: ${app_key_3.signPubKey}`)
+    
     async function derive(derivationPath, bundleType, passphrase) {
       // generate device bundle
       // derive a device root seed from the master
@@ -82,7 +89,7 @@ describe.only("Example tests for david", () => {
           "base64"
         )}`
       )
-      console.log(`Device signPubkey: ${pubKey}`)
+      return root
     }
 
     // clear our secrets
