@@ -17,7 +17,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "lint": "standard",
+    "lint": "standard --fix",
     "mocha": "mocha",
     "doc": "jsdoc -d docs -R README.md index.js",
     "test": "npm run-script lint && npm run-script mocha && npm run-script doc",
@@ -25,21 +25,21 @@
   },
   "dependencies": {
     "libsodium-wrappers-sumo": "^0.7.13",
-    "tiny-msgpack": "^1.0.2"
+    "tiny-msgpack": "^2.2.0"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.6",
-    "eslint": "^4.19.1",
-    "jsdoc": "^3.6.7",
-    "mocha": "^9.1.0",
-    "standard": "^16.0.3"
+    "@babel/core": "^7.24.0",
+    "@babel/eslint-parser": "^7.23.10",
+    "eslint": "^8.57.0",
+    "jsdoc": "^4.0.2",
+    "mocha": "^10.3.0",
+    "standard": "^17.1.0"
   },
   "standard": {
     "ignore": [
       "docs",
       "test/*"
     ],
-    "env": "mocha",
-    "parser": "babel-eslint"
+    "env": "mocha"
   }
 }
