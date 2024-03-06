@@ -85,6 +85,19 @@ class PrivSecretBuf {
       return _sodium.to_base64(publicKey, _sodium.base64_variants.URLSAFE_NO_PADDING)
     }
 
+    // closure to sign a string or uint8array
+    const sign = (message) => {
+      if (cfg.didZero) {
+        throw new Error('cannot access secret, already zeroed')
+      }
+      if (secret.length !== 32) {
+        throw new Error('can only derive secrets of length 32')
+      }
+      const { publicKey, privateKey } = _sodium.crypto_sign_seed_keypair(secret)
+
+      return _sodium.crypto_sign(message, privateKey)
+    }
+
     // closure to derive a sub-secret
     // if the secret is a passphrase, this will probably fail
     const derive = (subkeyId) => {
@@ -102,6 +115,7 @@ class PrivSecretBuf {
       get: { value: get },
       zero: { value: zero },
       deriveSignPubKey: { value: deriveSignPubKey },
+      sign: { value: sign },
       derive: { value: derive }
     })
 
@@ -720,6 +734,16 @@ export class UnlockedSeedBundle {
   derive (subkeyId, appData) {
     const next = this.#secret.derive(subkeyId)
     return new UnlockedSeedBundle(next, appData)
+  }
+
+  /**
+   * sign data.
+   *
+   * @param {string | Uint8Array} - message to be signed
+   * @returns {Uint8array | null | undefined}
+   */
+  sign (message) {
+    return this.#secret.sign(message)
   }
 
   /**
