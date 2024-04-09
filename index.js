@@ -2,12 +2,12 @@
  *
  */
 
-import _sodium from 'libsodium-wrappers-sumo'
-import msgpack from 'tiny-msgpack'
+import _sodium from "libsodium-wrappers-sumo";
+import msgpack from "tiny-msgpack";
 
 const _sodiumCfg = {
-  sodiumReady: false
-}
+  sodiumReady: false,
+};
 
 /**
  * Await this promise once before calling functions in this library.
@@ -15,17 +15,19 @@ const _sodiumCfg = {
  * @type {Promise}
  */
 export const seedBundleReady = _sodium.ready.then(() => {
-  _sodiumCfg.sodiumReady = true
-})
+  _sodiumCfg.sodiumReady = true;
+});
 
 /**
  * Internal helper for ensuring the _sodium lib is ready
  *
  * @private
  */
-function checkSodiumReady () {
+function checkSodiumReady() {
   if (!_sodiumCfg.sodiumReady) {
-    throw new Error('seedBundle library not ready. Await "seedBundleReady" first.')
+    throw new Error(
+      'seedBundle library not ready. Await "seedBundleReady" first.'
+    );
   }
 }
 
@@ -40,72 +42,96 @@ function checkSodiumReady () {
  * @private
  */
 class PrivSecretBuf {
-  constructor (secret) {
-    checkSodiumReady()
+  constructor(secret) {
+    checkSodiumReady();
 
     if (!(secret instanceof Uint8Array)) {
-      throw new Error('secret must be a Uint8Array')
+      throw new Error("secret must be a Uint8Array");
     }
 
     if (_sodium.is_zero(secret)) {
-      throw new Error('secret cannot be a zeroed Uint8Array')
+      throw new Error("secret cannot be a zeroed Uint8Array");
     }
 
     // setup some config to track our zero status
     const cfg = {
-      didZero: false
-    }
+      didZero: false,
+    };
 
     // closure to return secret if not zeroed
     const get = () => {
       if (cfg.didZero) {
-        throw new Error('cannot access secret, already zeroed')
+        throw new Error("cannot access secret, already zeroed");
       }
-      return secret
-    }
+      return secret;
+    };
 
     // closure to zero our secret
     const zero = () => {
-      _sodium.memzero(secret)
-      cfg.zero = true
-    }
+      _sodium.memzero(secret);
+      cfg.zero = true;
+    };
 
     // closure to derive an ed25519 signature pubkey from secret
     // if the secret is a passphrase, this will probably fail
     const deriveSignPubKey = () => {
       if (cfg.didZero) {
-        throw new Error('cannot access secret, already zeroed')
+        throw new Error("cannot access secret, already zeroed");
       }
       if (secret.length !== 32) {
-        throw new Error('can only derive secrets of length 32')
+        throw new Error("can only derive secrets of length 32");
       }
 
-      const { publicKey, privateKey } = _sodium.crypto_sign_seed_keypair(secret)
-      _sodium.memzero(privateKey)
-      return _sodium.to_base64(publicKey, _sodium.base64_variants.URLSAFE_NO_PADDING)
-    }
+      const { publicKey, privateKey } =
+        _sodium.crypto_sign_seed_keypair(secret);
+      _sodium.memzero(privateKey);
+      return _sodium.to_base64(
+        publicKey,
+        _sodium.base64_variants.URLSAFE_NO_PADDING
+      );
+    };
+
+    // closure to sign a string or uint8array
+    const sign = (message) => {
+      if (cfg.didZero) {
+        throw new Error("cannot access secret, already zeroed");
+      }
+      if (secret.length !== 32) {
+        throw new Error("can only derive secrets of length 32");
+      }
+      const { publicKey, privateKey } =
+        _sodium.crypto_sign_seed_keypair(secret);
+
+      return _sodium.crypto_sign(message, privateKey);
+    };
 
     // closure to derive a sub-secret
     // if the secret is a passphrase, this will probably fail
     const derive = (subkeyId) => {
       if (cfg.didZero) {
-        throw new Error('cannot access secret, already zeroed')
+        throw new Error("cannot access secret, already zeroed");
       }
       if (secret.length !== 32) {
-        throw new Error('can only derive secrets of length 32')
+        throw new Error("can only derive secrets of length 32");
       }
-      const newSecret = _sodium.crypto_kdf_derive_from_key(32, subkeyId, 'SeedBndl', secret)
-      return new PrivSecretBuf(newSecret)
-    }
+      const newSecret = _sodium.crypto_kdf_derive_from_key(
+        32,
+        subkeyId,
+        "SeedBndl",
+        secret
+      );
+      return new PrivSecretBuf(newSecret);
+    };
 
     Object.defineProperties(this, {
       get: { value: get },
       zero: { value: zero },
       deriveSignPubKey: { value: deriveSignPubKey },
-      derive: { value: derive }
-    })
+      sign: { value: sign },
+      derive: { value: derive },
+    });
 
-    Object.freeze(this)
+    Object.freeze(this);
   }
 }
 
@@ -116,9 +142,9 @@ class PrivSecretBuf {
  * @param {Uint8Array} secret the secret to injest.
  * @returns {PrivSecretBuf}
  */
-export function parseSecret (secret) {
-  checkSodiumReady()
-  return new PrivSecretBuf(secret)
+export function parseSecret(secret) {
+  checkSodiumReady();
+  return new PrivSecretBuf(secret);
 }
 
 /**
@@ -126,26 +152,26 @@ export function parseSecret (secret) {
  *
  * @private
  */
-function privTxLimits (limitName) {
-  let opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MODERATE
-  let memLimit = _sodium.crypto_pwhash_MEMLIMIT_MODERATE
+function privTxLimits(limitName) {
+  let opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MODERATE;
+  let memLimit = _sodium.crypto_pwhash_MEMLIMIT_MODERATE;
 
-  if (limitName === 'minimum') {
-    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MIN
-    memLimit = _sodium.crypto_pwhash_MEMLIMIT_MIN
-  } else if (limitName === 'interactive') {
-    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE
-    memLimit = _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE
-  } else if (limitName === 'sensitive') {
-    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_SENSITIVE
-    memLimit = _sodium.crypto_pwhash_MEMLIMIT_SENSITIVE
-  } else if (!limitName || limitName === 'moderate') {
+  if (limitName === "minimum") {
+    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_MIN;
+    memLimit = _sodium.crypto_pwhash_MEMLIMIT_MIN;
+  } else if (limitName === "interactive") {
+    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE;
+    memLimit = _sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE;
+  } else if (limitName === "sensitive") {
+    opsLimit = _sodium.crypto_pwhash_OPSLIMIT_SENSITIVE;
+    memLimit = _sodium.crypto_pwhash_MEMLIMIT_SENSITIVE;
+  } else if (!limitName || limitName === "moderate") {
     /* pass */
   } else {
-    throw new Error('invalid limitName: ' + limitName)
+    throw new Error("invalid limitName: " + limitName);
   }
 
-  return { opsLimit, memLimit }
+  return { opsLimit, memLimit };
 }
 
 /**
@@ -155,15 +181,15 @@ export class SeedCipher {
   /**
    * Don't use this directly, use a sub-class.
    */
-  constructor () {
-    checkSodiumReady()
+  constructor() {
+    checkSodiumReady();
   }
 
   /**
    * Clear out any secret data maintained by this cipher
    */
-  zero () {
-    throw new Error('SeedCipher.zero is not callable on base class')
+  zero() {
+    throw new Error("SeedCipher.zero is not callable on base class");
   }
 
   /**
@@ -172,8 +198,8 @@ export class SeedCipher {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @returns {object}
    */
-  encryptSeed (secretSeed) {
-    throw new Error('SeedCipher.encryptSeed is not callable on base class')
+  encryptSeed(secretSeed) {
+    throw new Error("SeedCipher.encryptSeed is not callable on base class");
   }
 }
 
@@ -181,15 +207,15 @@ export class SeedCipher {
  * Base class for unlocking an encrypted seedCipher.
  */
 export class LockedSeedCipher {
-  #finishUnlockCb
+  #finishUnlockCb;
 
   /**
    * Don't use this directly, use a sub-class.
    */
-  constructor (finishUnlockCb) {
-    checkSodiumReady()
+  constructor(finishUnlockCb) {
+    checkSodiumReady();
 
-    this.#finishUnlockCb = finishUnlockCb
+    this.#finishUnlockCb = finishUnlockCb;
   }
 
   /**
@@ -199,8 +225,8 @@ export class LockedSeedCipher {
    * @param {PrivSecretBuf}
    * @returns {UnlockedSeedBundle}
    */
-  finishUnlock (secretSeed) {
-    return this.#finishUnlockCb(secretSeed)
+  finishUnlock(secretSeed) {
+    return this.#finishUnlockCb(secretSeed);
   }
 }
 
@@ -208,8 +234,8 @@ export class LockedSeedCipher {
  * Straight up pwhashed passphrase type SeedCipher
  */
 export class SeedCipherPwHash extends SeedCipher {
-  #passphrase
-  #limitName
+  #passphrase;
+  #limitName;
 
   /**
    * Build this with
@@ -217,20 +243,20 @@ export class SeedCipherPwHash extends SeedCipher {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
    */
-  constructor (passphrase, limitName) {
-    super()
+  constructor(passphrase, limitName) {
+    super();
     if (!(passphrase instanceof PrivSecretBuf)) {
-      throw new Error('passphrase required, construct with parseSecret()')
+      throw new Error("passphrase required, construct with parseSecret()");
     }
-    this.#passphrase = passphrase
-    this.#limitName = limitName
+    this.#passphrase = passphrase;
+    this.#limitName = limitName;
   }
 
   /**
    * Clear secret data
    */
-  zero () {
-    this.#passphrase.zero()
+  zero() {
+    this.#passphrase.zero();
   }
 
   /**
@@ -238,16 +264,16 @@ export class SeedCipherPwHash extends SeedCipher {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @returns {object}
    */
-  encryptSeed (secretSeed) {
+  encryptSeed(secretSeed) {
     if (!(secretSeed instanceof PrivSecretBuf)) {
-      throw new Error('secretSeed must be an internal secret buffer')
+      throw new Error("secretSeed must be an internal secret buffer");
     }
 
-    const pwHash = _sodium.crypto_generichash(64, this.#passphrase.get())
+    const pwHash = _sodium.crypto_generichash(64, this.#passphrase.get());
 
-    const salt = _sodium.randombytes_buf(16)
+    const salt = _sodium.randombytes_buf(16);
 
-    const { opsLimit, memLimit } = privTxLimits(this.#limitName)
+    const { opsLimit, memLimit } = privTxLimits(this.#limitName);
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
@@ -257,15 +283,15 @@ export class SeedCipherPwHash extends SeedCipher {
       opsLimit,
       memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
-    )
+    );
 
-    _sodium.memzero(pwHash)
+    _sodium.memzero(pwHash);
 
     // initialize encryption
-    const { state, header } = _sodium
-      .crypto_secretstream_xchacha20poly1305_init_push(secret)
+    const { state, header } =
+      _sodium.crypto_secretstream_xchacha20poly1305_init_push(secret);
 
-    _sodium.memzero(secret)
+    _sodium.memzero(secret);
 
     // encrypt our inner secret data
     const cipher = _sodium.crypto_secretstream_xchacha20poly1305_push(
@@ -273,55 +299,48 @@ export class SeedCipherPwHash extends SeedCipher {
       secretSeed.get(),
       null,
       _sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
-    )
+    );
 
-    return [
-      'pw',
-      salt,
-      memLimit,
-      opsLimit,
-      header,
-      cipher
-    ]
+    return ["pw", salt, memLimit, opsLimit, header, cipher];
   }
 }
 
-function privNormalizeSecurityAnswers (answers) {
+function privNormalizeSecurityAnswers(answers) {
   // somehow standard is failing to recognize the usage in the loop
   // eslint-disable-next-line no-unused-vars
   for (const a of answers) {
     if (!(a instanceof PrivSecretBuf)) {
-      throw new Error('answer must be construct with parseSecret()')
+      throw new Error("answer must be construct with parseSecret()");
     }
   }
 
   // is there a more secure way to do this lcase / trimming / encoding??
   for (let ai = 0; ai < answers.length; ++ai) {
-    const s = (new TextDecoder()).decode(answers[ai].get())
-    answers[ai].zero()
-    answers[ai] = (new TextEncoder()).encode(s.toLowerCase().trim())
+    const s = new TextDecoder().decode(answers[ai].get());
+    answers[ai].zero();
+    answers[ai] = new TextEncoder().encode(s.toLowerCase().trim());
   }
-  const total = answers[0].length + answers[1].length + answers[2].length
+  const total = answers[0].length + answers[1].length + answers[2].length;
 
-  const answerBlob = new Uint8Array(total)
-  answerBlob.set(answers[0])
-  answerBlob.set(answers[1], answers[0].length)
-  answerBlob.set(answers[2], answers[0].length + answers[1].length)
+  const answerBlob = new Uint8Array(total);
+  answerBlob.set(answers[0]);
+  answerBlob.set(answers[1], answers[0].length);
+  answerBlob.set(answers[2], answers[0].length + answers[1].length);
 
-  _sodium.memzero(answers[0])
-  _sodium.memzero(answers[1])
-  _sodium.memzero(answers[2])
+  _sodium.memzero(answers[0]);
+  _sodium.memzero(answers[1]);
+  _sodium.memzero(answers[2]);
 
-  return parseSecret(answerBlob)
+  return parseSecret(answerBlob);
 }
 
 /**
  * SeedCipher locked by three security question answers
  */
 export class SeedCipherSecurityQuestions extends SeedCipher {
-  #questionList
-  #answerBlob
-  #limitName
+  #questionList;
+  #answerBlob;
+  #limitName;
 
   /**
    * Build this with
@@ -330,27 +349,27 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
    * @param {PrivSecretBuf[]} - 3 security answers (parseSecret(Uint8Array))
    * @param {string} [limitName] - optional limitName (['interactive', 'moderate' *default*, 'sensitive'])
    */
-  constructor (questions, answers, limitName) {
-    super()
+  constructor(questions, answers, limitName) {
+    super();
     if (
       !Array.isArray(questions) ||
       !Array.isArray(answers) ||
       questions.length !== 3 ||
       answers.length !== 3
     ) {
-      throw new Error('require 3 questions and 3 answers')
+      throw new Error("require 3 questions and 3 answers");
     }
 
-    this.#questionList = questions
-    this.#answerBlob = privNormalizeSecurityAnswers(answers)
-    this.#limitName = limitName
+    this.#questionList = questions;
+    this.#answerBlob = privNormalizeSecurityAnswers(answers);
+    this.#limitName = limitName;
   }
 
   /**
    * Clear secret data
    */
-  zero () {
-    this.#answerBlob.zero()
+  zero() {
+    this.#answerBlob.zero();
   }
 
   /**
@@ -358,16 +377,16 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @returns {object}
    */
-  encryptSeed (secretSeed) {
+  encryptSeed(secretSeed) {
     if (!(secretSeed instanceof PrivSecretBuf)) {
-      throw new Error('secretSeed must be an internal secret buffer')
+      throw new Error("secretSeed must be an internal secret buffer");
     }
 
-    const pwHash = _sodium.crypto_generichash(64, this.#answerBlob.get())
+    const pwHash = _sodium.crypto_generichash(64, this.#answerBlob.get());
 
-    const salt = _sodium.randombytes_buf(16)
+    const salt = _sodium.randombytes_buf(16);
 
-    const { opsLimit, memLimit } = privTxLimits(this.#limitName)
+    const { opsLimit, memLimit } = privTxLimits(this.#limitName);
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
@@ -377,15 +396,15 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
       opsLimit,
       memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
-    )
+    );
 
-    _sodium.memzero(pwHash)
+    _sodium.memzero(pwHash);
 
     // initialize encryption
-    const { state, header } = _sodium
-      .crypto_secretstream_xchacha20poly1305_init_push(secret)
+    const { state, header } =
+      _sodium.crypto_secretstream_xchacha20poly1305_init_push(secret);
 
-    _sodium.memzero(secret)
+    _sodium.memzero(secret);
 
     // encrypt our inner secret data
     const cipher = _sodium.crypto_secretstream_xchacha20poly1305_push(
@@ -393,10 +412,10 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
       secretSeed.get(),
       null,
       _sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
-    )
+    );
 
     return [
-      'qa',
+      "qa",
       salt,
       memLimit,
       opsLimit,
@@ -404,8 +423,8 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
       this.#questionList[1],
       this.#questionList[2],
       header,
-      cipher
-    ]
+      cipher,
+    ];
   }
 }
 
@@ -413,11 +432,11 @@ export class SeedCipherSecurityQuestions extends SeedCipher {
  * Unlock a SeedCipher with a straight forward pwhashed passphrase.
  */
 export class LockedSeedCipherPwHash extends LockedSeedCipher {
-  #salt
-  #memLimit
-  #opsLimit
-  #header
-  #cipher
+  #salt;
+  #memLimit;
+  #opsLimit;
+  #header;
+  #cipher;
 
   /**
    * You won't use this directly, call UnlockedSeedBundle.fromLocked()
@@ -429,13 +448,13 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
    * @param {Uint8Array} - secretstream header
    * @param {Uint8Array} - secretstream cipher
    */
-  constructor (finishUnlockCb, salt, memLimit, opsLimit, header, cipher) {
-    super(finishUnlockCb)
-    this.#salt = salt
-    this.#memLimit = memLimit
-    this.#opsLimit = opsLimit
-    this.#header = header
-    this.#cipher = cipher
+  constructor(finishUnlockCb, salt, memLimit, opsLimit, header, cipher) {
+    super(finishUnlockCb);
+    this.#salt = salt;
+    this.#memLimit = memLimit;
+    this.#opsLimit = opsLimit;
+    this.#header = header;
+    this.#cipher = cipher;
   }
 
   /**
@@ -444,14 +463,14 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @returns {UnlockedSeedBundle}
    */
-  unlock (passphrase) {
+  unlock(passphrase) {
     if (!(passphrase instanceof PrivSecretBuf)) {
-      throw new Error('passphrase required, construct with parseSecret()')
+      throw new Error("passphrase required, construct with parseSecret()");
     }
 
-    const pwHash = _sodium.crypto_generichash(64, passphrase.get())
+    const pwHash = _sodium.crypto_generichash(64, passphrase.get());
 
-    passphrase.zero()
+    passphrase.zero();
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
@@ -461,26 +480,29 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
       this.#opsLimit,
       this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
-    )
+    );
 
-    _sodium.memzero(pwHash)
+    _sodium.memzero(pwHash);
 
     // initialize decryption
     const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
       this.#header,
       secret
-    )
+    );
 
-    _sodium.memzero(secret)
+    _sodium.memzero(secret);
 
     // finalize decryption
-    const res = _sodium.crypto_secretstream_xchacha20poly1305_pull(state, this.#cipher)
+    const res = _sodium.crypto_secretstream_xchacha20poly1305_pull(
+      state,
+      this.#cipher
+    );
     if (!res) {
-      throw new Error('failed to decrypt bundle')
+      throw new Error("failed to decrypt bundle");
     }
-    const { message } = res
+    const { message } = res;
 
-    return this.finishUnlock(parseSecret(message))
+    return this.finishUnlock(parseSecret(message));
   }
 }
 
@@ -488,12 +510,12 @@ export class LockedSeedCipherPwHash extends LockedSeedCipher {
  * Unlock a SeedCipher with three security question answers.
  */
 export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
-  #salt
-  #memLimit
-  #opsLimit
-  #questionList
-  #header
-  #cipher
+  #salt;
+  #memLimit;
+  #opsLimit;
+  #questionList;
+  #header;
+  #cipher;
 
   /**
    * You won't use this directly, call UnlockedSeedBundle.fromLocked()
@@ -506,14 +528,22 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
    * @param {Uint8Array} - secretstream header
    * @param {Uint8Array} - secretstream cipher
    */
-  constructor (finishUnlockCb, salt, memLimit, opsLimit, questionList, header, cipher) {
-    super(finishUnlockCb)
-    this.#salt = salt
-    this.#memLimit = memLimit
-    this.#opsLimit = opsLimit
-    this.#questionList = questionList
-    this.#header = header
-    this.#cipher = cipher
+  constructor(
+    finishUnlockCb,
+    salt,
+    memLimit,
+    opsLimit,
+    questionList,
+    header,
+    cipher
+  ) {
+    super(finishUnlockCb);
+    this.#salt = salt;
+    this.#memLimit = memLimit;
+    this.#opsLimit = opsLimit;
+    this.#questionList = questionList;
+    this.#header = header;
+    this.#cipher = cipher;
   }
 
   /**
@@ -521,8 +551,8 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
    *
    * @returns {string[]}
    */
-  getQuestionList () {
-    return this.#questionList.slice()
+  getQuestionList() {
+    return this.#questionList.slice();
   }
 
   /**
@@ -531,17 +561,14 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
    * @param {PrivSecretBuf[]} - 3 security answers (parseSecret(Uint8Array))
    * @returns {UnlockedSeedBundle}
    */
-  unlock (answers) {
-    if (
-      !Array.isArray(answers) ||
-      answers.length !== 3
-    ) {
-      throw new Error('require 3 answers')
+  unlock(answers) {
+    if (!Array.isArray(answers) || answers.length !== 3) {
+      throw new Error("require 3 answers");
     }
 
-    const answerBlob = privNormalizeSecurityAnswers(answers)
-    const pwHash = _sodium.crypto_generichash(64, answerBlob.get())
-    answerBlob.zero()
+    const answerBlob = privNormalizeSecurityAnswers(answers);
+    const pwHash = _sodium.crypto_generichash(64, answerBlob.get());
+    answerBlob.zero();
 
     // generate secret from pwhash
     const secret = _sodium.crypto_pwhash(
@@ -551,26 +578,29 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
       this.#opsLimit,
       this.#memLimit,
       _sodium.crypto_pwhash_ALG_ARGON2ID13
-    )
+    );
 
-    _sodium.memzero(pwHash)
+    _sodium.memzero(pwHash);
 
     // initialize decryption
     const state = _sodium.crypto_secretstream_xchacha20poly1305_init_pull(
       this.#header,
       secret
-    )
+    );
 
-    _sodium.memzero(secret)
+    _sodium.memzero(secret);
 
     // finalize decryption
-    const res = _sodium.crypto_secretstream_xchacha20poly1305_pull(state, this.#cipher)
+    const res = _sodium.crypto_secretstream_xchacha20poly1305_pull(
+      state,
+      this.#cipher
+    );
     if (!res) {
-      throw new Error('failed to decrypt bundle')
+      throw new Error("failed to decrypt bundle");
     }
-    const { message } = res
+    const { message } = res;
 
-    return this.finishUnlock(parseSecret(message))
+    return this.finishUnlock(parseSecret(message));
   }
 }
 
@@ -585,7 +615,7 @@ export class LockedSeedCipherSecurityQuestions extends LockedSeedCipher {
  */
 export class UnlockedSeedBundle {
   // the secret buffer is stored here
-  #secret
+  #secret;
 
   /**
    * the base64 encoded public key associated with this seed
@@ -593,7 +623,7 @@ export class UnlockedSeedBundle {
    * @instance
    * @type {string}
    */
-  signPubKey
+  signPubKey;
 
   /**
    * any app / user data to provide context for this particular seed
@@ -601,7 +631,7 @@ export class UnlockedSeedBundle {
    * @instance
    * @type {object}
    */
-  appData = {}
+  appData = {};
 
   /**
    * You should not use this constructor directly.
@@ -613,20 +643,22 @@ export class UnlockedSeedBundle {
    * @param {PrivSecretBuf} - parseSecret(Uint8Array)
    * @param {object} - appData to associate with bundle
    */
-  constructor (secret, appData) {
-    checkSodiumReady()
+  constructor(secret, appData) {
+    checkSodiumReady();
 
     if (!(secret instanceof PrivSecretBuf)) {
-      throw new Error("invalid inner type. use 'newRandom()' or 'fromLocked()'")
+      throw new Error(
+        "invalid inner type. use 'newRandom()' or 'fromLocked()'"
+      );
     }
 
-    this.#secret = secret
-    Object.defineProperty(this, 'signPubKey', {
+    this.#secret = secret;
+    Object.defineProperty(this, "signPubKey", {
       value: secret.deriveSignPubKey(),
-      writable: false
-    })
+      writable: false,
+    });
     if (appData) {
-      this.appData = appData
+      this.appData = appData;
     }
   }
 
@@ -637,10 +669,10 @@ export class UnlockedSeedBundle {
    * @param {object} - appData to associate with bundle
    * @returns {UnlockedSeedBundle}
    */
-  static newRandom (appData) {
-    checkSodiumReady()
-    const secret = parseSecret(_sodium.randombytes_buf(32))
-    return new UnlockedSeedBundle(secret, appData)
+  static newRandom(appData) {
+    checkSodiumReady();
+    const secret = parseSecret(_sodium.randombytes_buf(32));
+    return new UnlockedSeedBundle(secret, appData);
   }
 
   /**
@@ -651,45 +683,64 @@ export class UnlockedSeedBundle {
    * @param {Uint8Array} - encoded bytes to decode / decrypt
    * @returns {LockedSeedCipher[]}
    */
-  static fromLocked (encodedBytes) {
-    const decoded = msgpack.decode(encodedBytes)
-    if (!Array.isArray(decoded) || decoded[0] !== 'hcsb0') {
-      throw new Error('invalid bundle, got: ' + JSON.stringify(decoded))
+  static fromLocked(encodedBytes) {
+    const decoded = msgpack.decode(encodedBytes);
+    if (!Array.isArray(decoded) || decoded[0] !== "hcsb0") {
+      throw new Error("invalid bundle, got: " + JSON.stringify(decoded));
     }
 
-    const appData = decoded[2].length ? msgpack.decode(decoded[2]) : {}
+    const appData = decoded[2].length ? msgpack.decode(decoded[2]) : {};
     const finishUnlockCb = (secretSeed) => {
-      return new UnlockedSeedBundle(secretSeed, appData)
-    }
+      return new UnlockedSeedBundle(secretSeed, appData);
+    };
 
-    const outList = []
+    const outList = [];
 
     // somehow standard is failing to recognize the usage in the loop
     // eslint-disable-next-line no-unused-vars
     for (const seedCipher of decoded[1]) {
-      if (seedCipher[0] === 'pw') {
-        const salt = seedCipher[1]
-        const memLimit = seedCipher[2]
-        const opsLimit = seedCipher[3]
-        const header = seedCipher[4]
-        const cipher = seedCipher[5]
-        outList.push(new LockedSeedCipherPwHash(finishUnlockCb, salt, memLimit, opsLimit, header, cipher))
-      } else if (seedCipher[0] === 'qa') {
-        const salt = seedCipher[1]
-        const memLimit = seedCipher[2]
-        const opsLimit = seedCipher[3]
-        const q1 = seedCipher[4]
-        const q2 = seedCipher[5]
-        const q3 = seedCipher[6]
-        const header = seedCipher[7]
-        const cipher = seedCipher[8]
-        outList.push(new LockedSeedCipherSecurityQuestions(finishUnlockCb, salt, memLimit, opsLimit, [q1, q2, q3], header, cipher))
+      if (seedCipher[0] === "pw") {
+        const salt = seedCipher[1];
+        const memLimit = seedCipher[2];
+        const opsLimit = seedCipher[3];
+        const header = seedCipher[4];
+        const cipher = seedCipher[5];
+        outList.push(
+          new LockedSeedCipherPwHash(
+            finishUnlockCb,
+            salt,
+            memLimit,
+            opsLimit,
+            header,
+            cipher
+          )
+        );
+      } else if (seedCipher[0] === "qa") {
+        const salt = seedCipher[1];
+        const memLimit = seedCipher[2];
+        const opsLimit = seedCipher[3];
+        const q1 = seedCipher[4];
+        const q2 = seedCipher[5];
+        const q3 = seedCipher[6];
+        const header = seedCipher[7];
+        const cipher = seedCipher[8];
+        outList.push(
+          new LockedSeedCipherSecurityQuestions(
+            finishUnlockCb,
+            salt,
+            memLimit,
+            opsLimit,
+            [q1, q2, q3],
+            header,
+            cipher
+          )
+        );
       } else {
-        throw new Error('unrecognized seedCipher type: ' + seedCipher[0])
+        throw new Error("unrecognized seedCipher type: " + seedCipher[0]);
       }
     }
 
-    return outList
+    return outList;
   }
 
   /**
@@ -697,16 +748,16 @@ export class UnlockedSeedBundle {
    *
    * @param {object} - appData to associate with bundle
    */
-  setAppData (appData) {
-    this.appData = appData
+  setAppData(appData) {
+    this.appData = appData;
   }
 
   /**
    * Zero out the internal secret buffers.
    * WARNING: see class-level note about zeroing / secrets.
    */
-  zero () {
-    this.#secret.zero()
+  zero() {
+    this.#secret.zero();
   }
 
   /**
@@ -717,9 +768,19 @@ export class UnlockedSeedBundle {
    * @param {object} - appData to associate with subseed bundle
    * @returns {UnlockedSeedBundle}
    */
-  derive (subkeyId, appData) {
-    const next = this.#secret.derive(subkeyId)
-    return new UnlockedSeedBundle(next, appData)
+  derive(subkeyId, appData) {
+    const next = this.#secret.derive(subkeyId);
+    return new UnlockedSeedBundle(next, appData);
+  }
+
+  /**
+   * sign data.
+   *
+   * @param {string | Uint8Array} - message to be signed
+   * @returns {Uint8array | null | undefined}
+   */
+  sign(message) {
+    return this.#secret.sign(message);
   }
 
   /**
@@ -730,29 +791,29 @@ export class UnlockedSeedBundle {
    * @param {SeedCipher[]} - list of seed ciphers to encrypt into the bundle
    * @returns {Uint8Array}
    */
-  lock (seedCipherList) {
+  lock(seedCipherList) {
     if (!Array.isArray(seedCipherList)) {
-      throw new Error('seedCipherList must be an array')
+      throw new Error("seedCipherList must be an array");
     }
 
-    const encodedSeedCipherList = []
+    const encodedSeedCipherList = [];
 
     // somehow standard is failing to recognize the usage in the loop
     // eslint-disable-next-line no-unused-vars
     for (const seedCipher of seedCipherList) {
       if (!(seedCipher instanceof SeedCipher)) {
-        throw new Error('seedCipher must be instanceof SeedCipher')
+        throw new Error("seedCipher must be instanceof SeedCipher");
       }
-      encodedSeedCipherList.push(seedCipher.encryptSeed(this.#secret))
-      seedCipher.zero()
+      encodedSeedCipherList.push(seedCipher.encryptSeed(this.#secret));
+      seedCipher.zero();
     }
 
     const bundle = [
-      'hcsb0',
+      "hcsb0",
       encodedSeedCipherList,
-      msgpack.encode(this.appData)
-    ]
+      msgpack.encode(this.appData),
+    ];
 
-    return msgpack.encode(bundle)
+    return msgpack.encode(bundle);
   }
 }
