@@ -72,23 +72,17 @@ class PrivSecretBuf {
       cfg.zero = true;
     };
 
-    // closure to derive an ed25519 signature pubkey from secret
+    // closure to derive pubkey from secret
     // if the secret is a passphrase, this will probably fail
     const deriveSignPubKey = () => {
-      if (cfg.didZero) {
-        throw new Error("cannot access secret, already zeroed");
-      }
-      if (secret.length !== 32) {
+      if (cfg.didZero) throw new Error("cannot access secret, already zeroed");
+      if (secret.length !== 32)
         throw new Error("can only derive secrets of length 32");
-      }
 
       const { publicKey, privateKey } =
         _sodium.crypto_sign_seed_keypair(secret);
       _sodium.memzero(privateKey);
-      return _sodium.to_base64(
-        publicKey,
-        _sodium.base64_variants.URLSAFE_NO_PADDING
-      );
+      return publicKey;
     };
 
     // closure to sign a string or uint8array

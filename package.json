@@ -1,6 +1,6 @@
 {
   "name": "@holochain/hc-seed-bundle",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Javascript SeedBundle parsing and generation library.",
   "keywords": [
     "holo",
