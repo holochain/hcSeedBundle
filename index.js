@@ -3,7 +3,7 @@
  */
 
 import _sodium from "libsodium-wrappers-sumo";
-import msgpack from "tiny-msgpack";
+import { encode, decode } from "@msgpack/msgpack";
 
 const _sodiumCfg = {
   sodiumReady: false,
@@ -76,8 +76,9 @@ class PrivSecretBuf {
     // if the secret is a passphrase, this will probably fail
     const deriveSignPubKey = () => {
       if (cfg.didZero) throw new Error("cannot access secret, already zeroed");
-      if (secret.length !== 32)
+      if (secret.length !== 32) {
         throw new Error("can only derive secrets of length 32");
+      }
 
       const { publicKey, privateKey } =
         _sodium.crypto_sign_seed_keypair(secret);
@@ -93,8 +94,7 @@ class PrivSecretBuf {
       if (secret.length !== 32) {
         throw new Error("can only derive secrets of length 32");
       }
-      const { publicKey, privateKey } =
-        _sodium.crypto_sign_seed_keypair(secret);
+      const { privateKey } = _sodium.crypto_sign_seed_keypair(secret);
 
       return _sodium.crypto_sign(message, privateKey);
     };
@@ -678,12 +678,12 @@ export class UnlockedSeedBundle {
    * @returns {LockedSeedCipher[]}
    */
   static fromLocked(encodedBytes) {
-    const decoded = msgpack.decode(encodedBytes);
+    const decoded = decode(encodedBytes);
     if (!Array.isArray(decoded) || decoded[0] !== "hcsb0") {
       throw new Error("invalid bundle, got: " + JSON.stringify(decoded));
     }
 
-    const appData = decoded[2].length ? msgpack.decode(decoded[2]) : {};
+    const appData = decoded[2].length ? decode(decoded[2]) : {};
     const finishUnlockCb = (secretSeed) => {
       return new UnlockedSeedBundle(secretSeed, appData);
     };
@@ -802,12 +802,8 @@ export class UnlockedSeedBundle {
       seedCipher.zero();
     }
 
-    const bundle = [
-      "hcsb0",
-      encodedSeedCipherList,
-      msgpack.encode(this.appData),
-    ];
+    const bundle = ["hcsb0", encodedSeedCipherList, encode(this.appData)];
 
-    return msgpack.encode(bundle);
+    return encode(bundle);
   }
 }

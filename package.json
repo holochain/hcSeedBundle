@@ -1,6 +1,6 @@
 {
   "name": "@holochain/hc-seed-bundle",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Javascript SeedBundle parsing and generation library.",
   "keywords": [
     "holo",
@@ -24,8 +24,8 @@
     "doc-open": "npm run-script doc && xdg-open ./docs/index.html"
   },
   "dependencies": {
-    "libsodium-wrappers-sumo": "^0.7.13",
-    "tiny-msgpack": "^2.2.0"
+    "@msgpack/msgpack": "^3.0.0-beta2",
+    "libsodium-wrappers-sumo": "^0.7.13"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
