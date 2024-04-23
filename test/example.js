@@ -92,6 +92,8 @@ describe.only("Example tests for david", () => {
       return root
     }
 
+    let a = app_key_1.sign("hello worlasdfasdfd the bigger rounder the better")
+    console.log("signature", a)
     // clear our secrets
     master.zero()
   })
