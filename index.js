@@ -95,8 +95,9 @@ class PrivSecretBuf {
         throw new Error("can only derive secrets of length 32");
       }
       const { privateKey } = _sodium.crypto_sign_seed_keypair(secret);
-
-      return _sodium.crypto_sign(message, privateKey);
+      const signature = _sodium.crypto_sign_detached(message, privateKey);
+      _sodium.memzero(privateKey);
+      return signature;
     };
 
     // closure to derive a sub-secret
