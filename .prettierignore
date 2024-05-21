@@ -2,4 +2,3 @@ node_modules
 .github
 pnpm-lock.yaml
 out
-workflows
