@@ -1,6 +1,5 @@
 name: "@holochain/hc-seed-bundle Test"
 on:
-  workflow_call: {}
   pull_request:
     branches: [ main ]
 
