@@ -12,7 +12,7 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["out/*", "build.js"],
+    ignores: ["out/*", "build.js", "docs/*"],
   },
   eslintPluginPrettierRecommended,
 );
