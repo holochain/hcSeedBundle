@@ -8,6 +8,7 @@ jobs:
     uses: ./.github/workflows/PR.yaml
   release:
     needs: test
+    runs-on: ubuntu-latest
     steps:
       - run: bun buildLib
       - run: bun pack
