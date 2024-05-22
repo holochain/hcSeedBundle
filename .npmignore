@@ -10,3 +10,6 @@ bun.lockb
 build.js  
 .prettierrc
 .vscode/                                    
+docs/
+.husky/                                  
+.prettierignore   
