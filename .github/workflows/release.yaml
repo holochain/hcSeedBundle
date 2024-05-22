@@ -1,0 +1,17 @@
+name: @holochain/hc-seed-bundle Test and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-and-release:
+    uses: ./.github/workflows/PR.yaml
+    with:
+      steps:
+        - run: bun buildLib
+        - run: bun pack
+        - name: Publish to npm
+          run: npm publish --access public
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

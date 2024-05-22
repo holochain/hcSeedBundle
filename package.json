@@ -27,6 +27,7 @@
     "eslint-plugin-prettier": "^5.1.3",
     "husky": "^9.0.1",
     "prettier": "^3.2.5",
+    "typedoc": "^0.25.13",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.10.0"
   },
@@ -36,7 +37,8 @@
     "lint": "eslint . --fix",
     "pack": "npm pack",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "doc": "typedoc --out docs --readme README.md index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

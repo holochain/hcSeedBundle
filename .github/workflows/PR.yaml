@@ -1,14 +1,12 @@
-name: @holochain/hc-seed-bundle Test and Release
+name: @holochain/hc-seed-bundle Test
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    environment:
-      name: Release
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js environment
@@ -18,9 +16,3 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun test
-      - run: bun buildLib
-      - run: bun pack
-      - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
