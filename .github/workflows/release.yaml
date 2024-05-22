@@ -4,8 +4,10 @@ on:
     branches: [ main ]
 
 jobs:
-  test-and-release:
+  test:
     uses: ./.github/workflows/PR.yaml
+  release:
+    needs: test
     with:
       steps:
         - run: bun buildLib
@@ -14,3 +16,4 @@ jobs:
           run: npm publish --access public
           env:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
