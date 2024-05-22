@@ -1,5 +1,4 @@
-name: @holochain/hc-seed-bundle Test and Release
-
+name: "@holochain/hc-seed-bundle Test and Release"
 on:
   push:
     branches: [ main ]
