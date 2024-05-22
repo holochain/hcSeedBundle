@@ -1,0 +1,15 @@
+
+node_modules/
+index.ts
+*.tgz
+tsconfig.json
+eslint.config.js
+.github
+tests/
+bun.lockb  
+build.js  
+.prettierrc
+.vscode/                                    
+docs/
+.husky/                                  
+.prettierignore   
