@@ -16,20 +16,6 @@ TypeScript SeedBundle parsing and generation library.
 - Since we're using libsodium for hashing, signature, and encryption algorithms, let's use it for derivation as well.
 - To be psychologically compatible with the [Bitcoin "HD Wallet" spec](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki), we will do away with the "context" part of sodium KDF by always setting it to `b"SeedBndl"` and focusing on the `subkey_id` and can declare a chain of subsequent derivations of a 32 byte seed in the form `m/68/1/65/8` where we apply `subkey_id`s 68, 1, 65, then 8 in turn.
 
-### To install dependencies
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.8. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
-
 ### Derivation Usage
 
 ```typescript
@@ -123,3 +109,19 @@ const master = cipherList[0].unlock(hcSeedBundle.parseSecret(pw));
 // clear our secrets
 master.zero();
 ```
+
+# Development
+
+### To install dependencies
+
+```bash
+bun install
+```
+
+To run:
+
+```bash
+bun run index.ts
+```
+
+This project was created using `bun init` in bun v1.1.8. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
