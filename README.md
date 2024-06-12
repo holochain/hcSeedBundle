@@ -108,13 +108,14 @@ const encodedBytes = Buffer.from(
   "k6VoY3NiMJGWonB3xBD5Ov1Vas4XnV1XPsf8ddCqzSAAAcQYkO36tg8NHoec02I7KtxfX+ZnmBzIz+SoxDFDNfr4/9811ugf18FiRSywOyVagFHIRTyrfV3jZLRt6W0r7WuepaQLjlFu4jgVMrd2xBOBqmJ1bmRsZVR5cGWmbWFzdGVy",
   "base64",
 );
-
+// decode the SeedCiphers that will let us unlock this bundle
 const cipherList = UnlockedSeedBundle.fromLocked(encodedBytes);
-
+// the demo is encrypted with PwHash
 if (!(cipherList[0] instanceof LockedSeedCipherPwHash)) {
   throw new Error("Expecting PwHash");
 }
 
+// unlock with the passphrase
 const pw = new TextEncoder().encode("test-passphrase");
 const master = cipherList[0].unlock(parseSecret(pw));
 
