@@ -42,7 +42,7 @@ deviceRoot.zero();
 ### Locking (encrypting) a SeedBundle
 
 ```typescript
-import { UnlockedSeedBundle, LockedSeedCipherPwHash, seedBundleReady, parseSecret } from "@holochain/hc-seed-bundle";
+import { UnlockedSeedBundle, SeedCipherPwHash, seedBundleReady, parseSecret } from "@holochain/hc-seed-bundle";
 
 // await library functions ready to call
 await seedBundleReady;
@@ -54,7 +54,7 @@ const master = UnlockedSeedBundle.newRandom({
 
 // we need the passphrase as a Uint8Array
 const pw = new TextEncoder().encode("test-passphrase");
-const encodedBytes = master.lock([new LockedSeedCipherPwHash(parseSecret(pw), "minimum")]);
+const encodedBytes = master.lock([new SeedCipherPwHash(parseSecret(pw), "minimum")]);
 
 // -- if you want to regenerate for (decrypting) below:
 // console.log(Buffer.from(encodedBytes).toString('base64'))
